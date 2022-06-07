@@ -123,7 +123,10 @@ arrecadacao.envia_arquivo()
 autuacao.envia_arquivo()
 barragens.envia_arquivo()
 beneficiada.envia_arquivo()
-dados_populacao.envia_arquivo()
+try:
+  dados_populacao.envia_arquivo()
+except Exception:
+  pass
 distribuicao.envia_arquivo()
 municipio.envia_arquivo()
 pib.envia_arquivo()
