@@ -3,7 +3,7 @@ from google.cloud import storage
 import re
 import os
 
-ServiceAccount = r'C:\Users\quel-\OneDrive\Área de Trabalho\CURSOS\Curso - Python\Atividades_aulas_aovivo\Atividades\Projeto_Individual\striking-shadow-349020-c0b04aecfb6a.json'
+ServiceAccount = r'C:\Users\quel-\OneDrive\Área de Trabalho\CURSOS\Curso - Python\Projeto_final\projeto-mineracao-soulcode-85d1cc17951f.json'
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = ServiceAccount
 
 def create_cluster(project_id, region, cluster_name):

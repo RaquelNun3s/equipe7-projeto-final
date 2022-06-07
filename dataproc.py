@@ -7,38 +7,49 @@ class Dataproc:
         self.project_id = project_id
     
     def cria_cluster(self):
-        # Criando o cliente do cluster
-        cliente_cluster = dataproc_v1.ClusterControllerClient(
-            client_options={"api_endpoint": f"{self.regiao}-dataproc.googleapis.com:443"}
-        )
-        # Definindo as configurações do cluster:
-        cluster = {
-        "project_id": self.project_id,
-        "cluster_name": self.nome_cluster,
-        "config": {
-            "master_config": {"num_instances": 1, "machine_type_uri": "n1-standard-2"},
-            "worker_config": {"num_instances": 2, "machine_type_uri": "n1-standard-2"},
-        },}
-
-        # Criando o cluster:
-        operacao = cliente_cluster.create_cluster(
-            request={"project_id": self.project_id, "region": self.regiao, "cluster":cluster}
-        )
-        result = operacao.result()
-        
-        # Imprimindo a mensagem sobre a criação do cluster
-        print(f"Cluster: {result.cluster_name} criado com sucesso")
+        try:
+            # Criando o cliente do cluster
+            cliente_cluster = dataproc_v1.ClusterControllerClient(
+                client_options={"api_endpoint": f"{self.regiao}-dataproc.googleapis.com:443"}
+            )
+            # Definindo as configurações do cluster:
+            cluster = {
+                "project_id": self.project_id,
+                "cluster_name": self.nome_cluster,
+                "config": {
+                    "master_config": {
+                        "num_instances": 1,
+                        "machine_type_uri": "n1-standard-2",
+                        "disk_config": {"boot_disk_type": "pd-standard", "boot_disk_size_gb": 100},
+                    },
+                    "worker_config": {
+                        "num_instances": 2,
+                        "machine_type_uri": "n1-standard-2",
+                        "disk_config": {"boot_disk_type": "pd-standard", "boot_disk_size_gb": 100},
+                    },},}
+            
+                
+            # Criando o cluster:
+            operacao = cliente_cluster.create_cluster(
+                request={"project_id": self.project_id, "region": self.regiao, "cluster":cluster}
+            )
+            result = operacao.result()
+            
+            # Imprimindo a mensagem sobre a criação do cluster
+            print(f"Cluster: {result.cluster_name} criado com sucesso")
+        except Exception as e:
+            print(str(e))
         
     def deleta_cluster(self):
         cliente_cluster = dataproc_v1.ClusterControllerClient(
-        client_options={"api_endpoint": f"{self.regiao}-dataproc.googleapis.com:443"}
+            client_options={"api_endpoint": f"{self.regiao}-dataproc.googleapis.com:443"}
         )
         operacao = cliente_cluster.delete_cluster(
             request={"project_id": self.project_id, "region": self.regiao, "cluster_name": self.nome_cluster,}
         )
-        operacao.result()
-        print("Cluster {self.nome_cluster} successfully deleted.")
-        
+        print(operacao.result())
+        print(f"Cluster {self.nome_cluster} successfully deleted.")
+
 class Job(Dataproc):
     def __init__(self, regiao, project_id, bucket, arquivo_spark, nome_cluster):
         self.regiao = regiao
