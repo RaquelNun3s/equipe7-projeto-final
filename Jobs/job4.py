@@ -345,7 +345,7 @@ verificacao_valor_padrao(dfp_dados_populacao, 'Índice de Envelhecimento')
 verificacao_valor_padrao(dfp_dados_populacao, 'Óbitos')
 verificacao_valor_padrao(dfp_dados_populacao, 'uf')
 
-# Tratamento
+# # Tratamento
 dfp_dados_populacao.drop(['_id'], axis=1, inplace=True)
 
 # Fazendo as configurações necessárias:

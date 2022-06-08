@@ -10,7 +10,6 @@ class Conector_mongo():
         user = o nome do seu projeto do mongodb atlas
         password = sua senha do cluster criado no mongodb atlas
         db = a database que será utilizada
-        
     '''
     def __init__(self, user, password, db):
         self.user = user
@@ -69,7 +68,7 @@ dfs_beneficiada = spark.read.csv(path='gs://soulcode-mineracao/original/benefici
 dfs_distribuicao = spark.read.csv(path='gs://soulcode-mineracao/original/distribuicao.csv', inferSchema=True, header=True, sep=',', encoding='latin1')
 dfs_municipio = spark.read.csv(path='gs://soulcode-mineracao/original/municipio.csv', inferSchema=True, header=True, sep=',', encoding='latin1')
 dfs_pib = spark.read.csv(path='gs://soulcode-mineracao/original/pib.csv', inferSchema=True, header=True, sep=',', encoding='latin1')
-# dfs_dados_populacao = spark.read.json(path='gs://soulcode-mineracao/original/dados_populacao.json')
+dfs_dados_populacao = spark.read.json(path='gs://soulcode-mineracao/original/dados_populacao.json')
 
 # Ajustando o nome das colunas da dfs_municipio:
 dfs_municipio = dfs_municipio.withColumnRenamed('COD. UF', 'COD_UF')
@@ -83,7 +82,7 @@ db_conectada.inserir_mongo(dfs_arrecadacao, 'arrecadacao')
 db_conectada.inserir_mongo(dfs_autuacao, 'autuacao')
 db_conectada.inserir_mongo(dfs_barragens, 'barragens')
 db_conectada.inserir_mongo(dfs_beneficiada, 'beneficiada')
-#db_conectada.inserir_mongo(dfs_dados_populacao, 'dados_populacao')
+db_conectada.inserir_mongo(dfs_dados_populacao, 'dados_populacao')
 db_conectada.inserir_mongo(dfs_distribuicao, 'distribuicao')
 db_conectada.inserir_mongo(dfs_municipio, 'municipio')
 db_conectada.inserir_mongo(dfs_pib, 'pib')
