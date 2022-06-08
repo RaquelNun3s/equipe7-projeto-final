@@ -2,6 +2,7 @@ import pyspark
 from pyspark import SparkContext
 from pyspark.sql import SparkSession
 from pyspark.sql import SQLContext
+import pandas as pd
 
 class Conector_mongo():
     '''
@@ -25,7 +26,7 @@ class Conector_mongo():
         self.collection=collection
         self.df = df
         mongo_ip = f"mongodb://{self.user}:{self.password}@ac-5uquupr-shard-00-00.bjjkitq.mongodb.net:27017,ac-5uquupr-shard-00-01.bjjkitq.mongodb.net:27017,ac-5uquupr-shard-00-02.bjjkitq.mongodb.net:27017/?ssl=true&replicaSet=atlas-dzh8bl-shard-0&authSource=admin&retryWrites=true/{self.db}."
-        self.df.write.format('com.mongodb.spark.sql.DefaultSource')\
+        self.df.write.format('mongo')\
             .option('spark.mongodb.output.database', self.db)\
             .option('spark.mongodb.output.collection', self.collection)\
             .option('uri', mongo_ip + self.collection)\
@@ -42,7 +43,7 @@ class Conector_mongo():
         self.collection = collection
         self.spark_session = spark_session
         mongo_ip = f"mongodb://{self.user}:{self.password}@ac-5uquupr-shard-00-00.bjjkitq.mongodb.net:27017,ac-5uquupr-shard-00-01.bjjkitq.mongodb.net:27017,ac-5uquupr-shard-00-02.bjjkitq.mongodb.net:27017/?ssl=true&replicaSet=atlas-dzh8bl-shard-0&authSource=admin&retryWrites=true/{self.db}."
-        self.df = ( self.spark_session.read.format('com.mongodb.spark.sql.DefaultSource')
+        self.df = ( self.spark_session.read.format('mongo')
                    .option('spark.mongodb.input.database', self.db)
                    .option('spark.mongodb.input.collection', self.collection)
                    .option('uri', mongo_ip + self.collection).load()) 
@@ -53,7 +54,9 @@ conf =( pyspark.SparkConf()
                .set("spark.jars.packages","org.mongodb.spark:mongo-spark-connector_2.12:3.0.1")
                .set("spark.jars", 'https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop2-latest.jar')
                .setMaster("local")
-               .setAppName("job-3"))
+               .setAppName("teste_job4")
+               .setAll([("spark.driver.memory", "40g"), ("spark.executor.memory", "50g")])
+               )
 sc = SparkContext(conf=conf)
 spark = SparkSession(sc)
 spark._jsc.hadoopConfiguration().set('fs.gs.impl', 'com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem')
@@ -66,7 +69,7 @@ dfs_beneficiada = spark.read.csv(path='gs://soulcode-mineracao/original/benefici
 dfs_distribuicao = spark.read.csv(path='gs://soulcode-mineracao/original/distribuicao.csv', inferSchema=True, header=True, sep=',', encoding='latin1')
 dfs_municipio = spark.read.csv(path='gs://soulcode-mineracao/original/municipio.csv', inferSchema=True, header=True, sep=',', encoding='latin1')
 dfs_pib = spark.read.csv(path='gs://soulcode-mineracao/original/pib.csv', inferSchema=True, header=True, sep=',', encoding='latin1')
-dfs_dados_populacao = spark.read.json(path='gs://soulcode-mineracao/original/dados_populacao.json')
+# dfs_dados_populacao = spark.read.json(path='gs://soulcode-mineracao/original/dados_populacao.json')
 
 # Ajustando o nome das colunas da dfs_municipio:
 dfs_municipio = dfs_municipio.withColumnRenamed('COD. UF', 'COD_UF')
@@ -80,7 +83,7 @@ db_conectada.inserir_mongo(dfs_arrecadacao, 'arrecadacao')
 db_conectada.inserir_mongo(dfs_autuacao, 'autuacao')
 db_conectada.inserir_mongo(dfs_barragens, 'barragens')
 db_conectada.inserir_mongo(dfs_beneficiada, 'beneficiada')
-db_conectada.inserir_mongo(dfs_dados_populacao, 'dados_populacao')
+#db_conectada.inserir_mongo(dfs_dados_populacao, 'dados_populacao')
 db_conectada.inserir_mongo(dfs_distribuicao, 'distribuicao')
 db_conectada.inserir_mongo(dfs_municipio, 'municipio')
 db_conectada.inserir_mongo(dfs_pib, 'pib')

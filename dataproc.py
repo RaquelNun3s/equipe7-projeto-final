@@ -13,21 +13,45 @@ class Dataproc:
                 client_options={"api_endpoint": f"{self.regiao}-dataproc.googleapis.com:443"}
             )
             # Definindo as configurações do cluster:
-            cluster = {
-                "project_id": self.project_id,
+            cluster = cluster = {
                 "cluster_name": self.nome_cluster,
                 "config": {
-                    "master_config": {
-                        "num_instances": 1,
-                        "machine_type_uri": "n1-standard-2",
-                        "disk_config": {"boot_disk_type": "pd-standard", "boot_disk_size_gb": 100},
+                "config_bucket": "soulcode-mineracao",
+                "gce_cluster_config": {
+                    "metadata": {
+                    "PIP_PACKAGES": "pyspark==3.0.1",
+                    "google-cloud-storage": "=1.38.0"
                     },
-                    "worker_config": {
-                        "num_instances": 2,
-                        "machine_type_uri": "n1-standard-2",
-                        "disk_config": {"boot_disk_type": "pd-standard", "boot_disk_size_gb": 100},
-                    },},}
-            
+                    "zone_uri": "https://www.googleapis.com/compute/v1/projects/projeto-mineracao-soulcode/zones/us-east1-d"
+                },
+                "master_config": {
+                    "disk_config": {
+                    "boot_disk_size_gb": 200,
+                    "boot_disk_type": "pd-standard"
+                    },
+                    "image_uri": "https://www.googleapis.com/compute/v1/projects/cloud-dataproc/global/images/dataproc-2-0-deb10-20220531-170200-rc01",
+                    "machine_type_uri": "https://www.googleapis.com/compute/v1/projects/projeto-mineracao-soulcode/zones/us-east1-d/machineTypes/n1-standard-4",
+                    "num_instances": 1,
+                },
+                "software_config": {
+                    "image_version": "2.0.42-debian10",
+                    "properties": {
+                    "spark:spark.jars.packages": "org.mongodb.spark:mongo-spark-connector_2.12:3.0.1",
+                    "spark:spark.scheduler.mode": "FAIR",
+                    }
+                },
+                "worker_config": {
+                    "disk_config": {
+                    "boot_disk_size_gb": 200,
+                    "boot_disk_type": "pd-standard"
+                    },
+                    "image_uri": "https://www.googleapis.com/compute/v1/projects/cloud-dataproc/global/images/dataproc-2-0-deb10-20220531-170200-rc01",
+                    "machine_type_uri": "https://www.googleapis.com/compute/v1/projects/projeto-mineracao-soulcode/zones/us-east1-d/machineTypes/n1-standard-2",
+                    "num_instances": 2,
+                }
+                },
+                "project_id": self.project_id,
+                }
                 
             # Criando o cluster:
             operacao = cliente_cluster.create_cluster(
@@ -74,3 +98,7 @@ class Job(Dataproc):
         response = operacao.result() 
         # A partir da próxima linha ta mudado (completar com o resto da documentação)
         print(f"Job finished successfully: {response}\r\n")
+
+dataproc_v1.ClusterConfig
+dataproc_v1.PySparkJob
+dataproc_v1.ClusterOperationMetadata
