@@ -34,8 +34,8 @@ job4 = Job(region, project_id, gcs_bucket, 'job4.py', cluster_name)
 try:
     job1.cria_job()
     # job2.cria_job()
-    # job3.cria_job()
-    # job4.cria_job()
+    job3.cria_job()
+    job4.cria_job()
 except Exception as e:
     print(str(e))
 

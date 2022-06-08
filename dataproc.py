@@ -98,7 +98,3 @@ class Job(Dataproc):
         response = operacao.result() 
         # A partir da próxima linha ta mudado (completar com o resto da documentação)
         print(f"Job finished successfully: {response}\r\n")
-
-dataproc_v1.ClusterConfig
-dataproc_v1.PySparkJob
-dataproc_v1.ClusterOperationMetadata
