@@ -67,12 +67,13 @@ dfs_distribuicao = spark.read.csv(path='gs://mineracao2/distribuicao.csv', infer
 dfs_municipio = spark.read.csv(path='gs://mineracao2/municipio.csv', inferSchema=True, header=True, sep=';', encoding='latin1')
 dfs_pib = spark.read.csv(path='gs://mineracao2/pib.csv', inferSchema=True, header=True, sep=',', encoding='latin1')
 
-try:
-  spark.sparkContext.addFile('https://raw.githubusercontent.com/JoaoHenrique132/dados_populacao_IBGE/main/dados_populacao_IBGE_json/IBGE_AC.json')
-  dfs_dados_populacao = spark.read.json(SparkFiles.get('IBGE_AC.json'))
-  dfs_dados_populacao = dfs_dados_populacao.withColumn('uf', F.lit('AC'))
+
+url = 'https://raw.githubusercontent.com/JoaoHenrique132/dados_populacao_IBGE/main/dados_populacao_IBGE_json/'
+spark.sparkContext.addFile(url + 'IBGE_AC.json')
+dfs_dados_populacao = spark.read.json(SparkFiles.get('IBGE_AC.json'))
+dfs_dados_populacao = dfs_dados_populacao.withColumn('uf', F.lit('AC'))
   
-  lista = ['IBGE_AL.json',
+lista = ['IBGE_AL.json',
           'IBGE_AM.json',
           'IBGE_AP.json',
           'IBGE_BA.json',
@@ -99,19 +100,15 @@ try:
           'IBGE_SP.json',
           'IBGE_TO.json']
 
-  for filename in lista:
-    spark.sparkContext.addFile('https://raw.githubusercontent.com/JoaoHenrique132/dados_populacao_IBGE/main/dados_populacao_IBGE_json/' + filename)
-except Exception:
-  pass
+for filename in lista:
+  spark.sparkContext.addFile('https://raw.githubusercontent.com/JoaoHenrique132/dados_populacao_IBGE/main/dados_populacao_IBGE_json/' + filename)
+
 # Criando os objetos Arquivos:
 arrecadacao = Arquivo('arrecadacao.csv','original','soulcode-mineracao', dfs_arrecadacao, 'csv')
 autuacao = Arquivo('autuacao.csv', 'original', 'soulcode-mineracao', dfs_autuacao, 'csv')
 barragens = Arquivo('barragens.csv', 'original', 'soulcode-mineracao', dfs_barragens, 'csv')
 beneficiada = Arquivo('beneficiada.csv','original', 'soulcode-mineracao', dfs_beneficiada, 'csv')
-try:
-  dados_populacao = Arquivo('dados_populacao.json', 'original', 'soulcode-mineracao', dfs_dados_populacao, 'json')
-except Exception:
-  pass
+dados_populacao = Arquivo('dados_populacao.json', 'original', 'soulcode-mineracao', dfs_dados_populacao, 'json')
 distribuicao = Arquivo('distribuicao.csv', 'original', 'soulcode-mineracao', dfs_distribuicao, 'csv')
 municipio = Arquivo('municipio.csv','original', 'soulcode-mineracao', dfs_municipio, 'csv')
 pib = Arquivo('pib.csv','original', 'soulcode-mineracao', dfs_pib, 'csv')

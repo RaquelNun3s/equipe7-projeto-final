@@ -1,12 +1,144 @@
 import pandas as pd
-from verificacoes import *
-from mongo import Conector_mongo
+#from verificacoes import *
+#from mongo import Conector_mongo
 import numpy as np
 import pyspark
 from pyspark import SparkContext
 from pyspark.sql import SparkSession
 from pyspark.sql import SQLContext
 
+import pandas as pd
+from datetime import datetime
+
+# Função para fazer a verificação de texto
+def verificacao_texto(data_frame, coluna, tamanho_texto: None, numeros: bool):
+    '''
+    Função para identificar problemas em colunas que contenham apenas letras e números
+    '''
+    problemas = []
+    for i in range(len(data_frame)):
+        texto = data_frame.loc[i, coluna]
+        if numeros == False:
+            if texto.isalpha() == False:
+                problemas.append(data_frame.loc[i, coluna])
+            elif tamanho_texto != None:
+                if len(texto) != tamanho_texto:
+                    problemas.append(data_frame.loc[i, coluna])
+        elif numeros == True:
+            if texto.isalnum() == False:
+                problemas.append(data_frame.loc[i, coluna])
+            elif tamanho_texto != None:
+                if len(texto) != tamanho_texto:
+                    problemas.append(data_frame.loc[i, coluna])
+    # Imprimindo os problemas que deverão ser corrigidos:
+    df_problemas = pd.DataFrame(problemas, columns=["corrigir"])
+    # df_problemas = pd.DataFrame(df_problemas.corrigir.unique(), columns=["Corrigir:"])
+    if len(df_problemas) > 0:
+        print(df_problemas)
+    else:
+        print("Nenhum problema detectado nesta coluna")
+    print(f"Verificação da coluna {coluna} concluída")
+
+
+def verificacao_tipo(data_frame, coluna, tipo: type):
+    '''
+    Função para verificar problemas relacionado ao tipo de dados que a coluna deve possuir
+    '''
+    problemas = []
+    for i in range(len(data_frame)):
+        try:
+            tipo(data_frame.loc[i, coluna])
+        except Exception:
+            problemas.append(data_frame.loc[i, coluna])
+    df_problemas = pd.DataFrame(problemas, columns=["corrigir"])
+    df_problemas = pd.DataFrame(df_problemas.corrigir.unique(), columns=["Corrigir: "])
+    print("--------------------------------------------------------------------")
+    print(f"Verificando a coluna {coluna}: ")
+    if len(df_problemas) > 0:
+        print(df_problemas)
+    else:
+        print("Nenhum problema detectado nessa coluna")
+    print(f"Verificação da coluna {coluna} concluída")
+    return df_problemas
+
+
+def verificacao_valor_padrao(data_frame, coluna):
+    '''
+    Função para identificar os valores únicos presentes em uma coluna, útil para caso de colunas que possuem valores padronizados, como por exemplo 'SIM' e 'NÃO'
+    '''
+    unicos = data_frame[coluna].unique()
+    print("---------------------------------------------------------------------")
+    print(f"Verificando valores únicos da coluna {coluna}: ")
+    print(unicos)
+    print("Verificação concluída")
+
+
+def verificacao_data(data_frame, coluna, formato: str):
+    '''
+    Função para verificar se todos os valores de uma coluna correspondem a data do formato especificado
+    '''
+    problemas = []
+    # Verificando se tratam-se de datas:
+    for i in range(len(data_frame)):
+        try:
+            datetime.now() - datetime.strptime(data_frame.loc[i, coluna], formato)
+        except Exception:
+            if data_frame.loc[i, coluna] != 'NULO':
+                problemas.append(data_frame.loc[i, coluna])
+    df_problemas = pd.DataFrame(problemas, columns=["Corrigir:"])
+    print("---------------------------------------------------------------------")
+    print(f"Verificando a coluna {coluna}: ")
+    if len(df_problemas) > 0:
+        print(df_problemas)
+    else:
+        print("Não há nenhum problema para corrigir")
+    print(f"Verificação da coluna {coluna} concluída! ")
+
+#Colocando a classe do mongo
+class Conector_mongo():
+    '''
+    Essa classe tem por objetivo realizar operações entre o pyspark e o mongodb atlas.
+        user = o nome do seu projeto do mongodb atlas
+        password = sua senha do cluster criado no mongodb atlas
+        db = a database que será utilizada
+        
+    '''
+    def __init__(self, user, password, db):
+        self.user = user
+        self.password = password
+        self.db = db
+  
+    def inserir_mongo(self, df, collection):
+        '''
+        Esse método tem por objetivo inserir todos os dados de uma dataframe spark no mongodb atlas
+            df = a dataframe do spark que deseja realizar a inserção
+            collection = o nome da collection que deseja inserir os dados
+        '''
+        self.collection=collection
+        self.df = df
+        mongo_ip = f"mongodb://{self.user}:{self.password}@ac-5uquupr-shard-00-00.bjjkitq.mongodb.net:27017,ac-5uquupr-shard-00-01.bjjkitq.mongodb.net:27017,ac-5uquupr-shard-00-02.bjjkitq.mongodb.net:27017/?ssl=true&replicaSet=atlas-dzh8bl-shard-0&authSource=admin&retryWrites=true/{self.db}."
+        self.df.write.format('com.mongodb.spark.sql.DefaultSource')\
+            .option('spark.mongodb.output.database', self.db)\
+            .option('spark.mongodb.output.collection', self.collection)\
+            .option('uri', mongo_ip + self.collection)\
+            .mode('Overwrite')\
+            .option('maxBatchSize', "80000000").save()
+    
+    def ler_mongo(self, spark_session, collection):
+        '''
+        Esse método tem por objetivo ler os dados de uma collection do mongodb atlas, retornando uma dataframe
+        do pyspark
+            spark_session = o nome da sua SparkSession
+            collection = O nome da collection que deseja extrair os dados
+        '''
+        self.collection = collection
+        self.spark_session = spark_session
+        mongo_ip = f"mongodb://{self.user}:{self.password}@ac-5uquupr-shard-00-00.bjjkitq.mongodb.net:27017,ac-5uquupr-shard-00-01.bjjkitq.mongodb.net:27017,ac-5uquupr-shard-00-02.bjjkitq.mongodb.net:27017/?ssl=true&replicaSet=atlas-dzh8bl-shard-0&authSource=admin&retryWrites=true/{self.db}."
+        self.df = ( self.spark_session.read.format('com.mongodb.spark.sql.DefaultSource')
+                   .option('spark.mongodb.input.database', self.db)
+                   .option('spark.mongodb.input.collection', self.collection)
+                   .option('uri', mongo_ip + self.collection).load()) 
+        return self.df
 
 # Criando a SparkSession:
 conf =( pyspark.SparkConf()
@@ -216,3 +348,19 @@ verificacao_valor_padrao(dfp_dados_populacao, 'uf')
 # Tratamento
 dfp_dados_populacao.drop(['_id'], axis=1, inplace=True)
 
+# Fazendo as configurações necessárias:
+spark.conf.set("spark.sql.execution.arrow.enabled", "true")
+# Transformando em DF spark:
+dft_arrecadacao = spark.createDataFrame(dfp_arrecadacao)
+dft_barragens = spark.createDataFrame(dfp_barragens)
+dft_dados_populacao = spark.createDataFrame(dfp_dados_populacao)
+dft_pip = spark.createDataFrame(dfp_pib)
+
+# Fazendo a conexão com o mongo:
+db_conexao_tratada = Conector_mongo('soulcode-mineracao', 'mongodb', 'tratados')
+
+# Enviando os dados tratados para o mongo:
+db_conexao_tratada.inserir_mongo(dft_arrecadacao, 'arrecadacao')
+db_conexao_tratada.inserir_mongo(dft_barragens, 'barragens')
+db_conexao_tratada.inserir_mongo(dft_dados_populacao, 'dados_populacao')
+db_conexao_tratada.inserir_mongo(dft_pip, 'pib')
