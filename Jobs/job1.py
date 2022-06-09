@@ -3,6 +3,8 @@ from pyspark import SQLContext, SparkFiles
 import pyspark.sql.functions as F
 from google.cloud import storage
 import pandas as pd
+from pyspark.sql.types import *
+
 #from modules.arquivo import Arquivo
 
 class Arquivo:
@@ -63,6 +65,22 @@ spark = ( SparkSession.builder
 
 spark.conf.set("mapreduce.fileoutputcommitter.marksuccessfuljobs", "false")
 
+esquema_arrecadacao = (
+    StructType([
+        StructField("Ano", IntegerType(), True),
+        StructField("AnoDoProcesso", IntegerType(), True),
+        StructField("CPF_CNPJ", StringType(), True),
+        StructField("Município", StringType(), True),
+        StructField("Mês", IntegerType(), True),
+        StructField("Processo", IntegerType(), True),
+        StructField("QuantidadeComercializada", StringType(), True),
+        StructField("Substância", StringType(), True),
+        StructField("Tipo_PF_PJ", StringType(), True),
+        StructField("UF", StringType(), True),
+        StructField("UnidadeDeMedida", StringType(), True),
+        StructField("ValorRecolhido", StringType(), True)
+    ])
+)
 # Puxando os arquivos dos seus locais de origem e criando as:
 dfs_arrecadacao = spark.read.csv(path='gs://mineracao2/arrecadacao.csv', inferSchema=True, header=True, sep=';', encoding='latin1')
 dfs_barragens = spark.read.csv(path='gs://mineracao2/Barragens.csv', inferSchema=True, header=True, sep=';', encoding='latin1') 
@@ -139,100 +157,6 @@ for filename in lista:
 # municipio = Arquivo('municipio.csv','original', 'soulcode-mineracao', dfs_municipio, 'csv')
 # pib = Arquivo('pib.csv','original', 'soulcode-mineracao', dfs_pib, 'csv')
 
-# barragem_cols = ['A Back Up Dam está dentro da Área do Processo ANM ou da Área de Servidão',
-#  'A Back Up Dam garante a redução da área da mancha de inundação à jusante',
-#  'A Back up Dam passou por auditoria de terceira parte',
-#  'A Barragem armazena rejeitos/residuos que contenham Cianeto',
-#  'A Barragem de Mineração está dentro da Área do Processo ANM ou da Área de Servidão',
-#  'A Barragem de Mineração possui Manta Impermeabilizante',
-#  'A Barragem de Mineração possui outra estrutura de mineração interna selante de reservatório',
-#  'A barragem de mineração possui Back Up Dam',
-#  'Altura Máxima do projeto da Back Up Dam (m)',
-#  'Altura máxima atual (m)',
-#  'Altura máxima do projeto licenciado (m)',
-#  'As cópias físicas do PAEBM foram entregues para as Prefeituras e Defesas Civis municipais e estaduais',
-#  'Barragem de mineração é alimentado por usina',
-#  'CPF_CNPJ',
-#  'Categoria de Risco - CRI',
-#  'Classe',
-#  'Comprimento atual da crista (m)',
-#  'Comprimento da Crista do projeto da Back Up Dam (m)',
-#  'Comprimento da crista do projeto (m)',
-#  'Confiabilidade das estruturas extravasora',
-#  'Dano Potencial Associado - DPA',
-#  'Data da Finalização da DCE',
-#  'Data da última Vistoria de Inspeção Regular',
-#  'Deformações e recalque',
-#  'Descarga Máxima do vertedouro da Dack Up Dam (m³/seg)',
-#  'Descarga máxima do vertedouro (m³/seg)',
-#  'Desde',
-#  'Desde (Back Up Dam)',
-#  'Deteriorização dos taludes / paramentos',
-#  'Documentação de projeto',
-#  'Empreendedor',
-#  'Esta Back Up Dam está operando pós rompimento da barragem de mineração',
-#  'Estrutura com o Objetivo de Contenção',
-#  'Estrutura organizacional e qualificação técnica dos profissionais na equipe de Segurança da Barragem',
-#  'Existe documento que ateste a segurança estrutural e a capacidade para contenção de rejeitos da Back Up Dam com ART',
-#  'Existe manual de operação da Back Up Dam',
-#  'Existência de população a jusante',
-#  'ID',
-#  'Impacto ambiental',
-#  'Impacto sócio-econômico',
-#  'Inserido na PNSB',
-#  'Latitude',
-#  'Latitude (Back Up Dam)',
-#  'Longitude',
-#  'Longitude (Back Up Dam)',
-#  'Manuais de Procedimentos para Inspeções de Segurança e Monitoramento',
-#  'Minério principal presente no reservatório',
-#  'Motivo de Envio',
-#  'Município',
-#  'Município (Back Up Dam)',
-#  'Método construtivo da Back Up Dam',
-#  'Método construtivo da barragem',
-#  'Necessita de PAEBM',
-#  'Nome',
-#  'Nome da Back Up Dam',
-#  'Nível de Emergência',
-#  'Número de pessoas possivelmente afetadas a jusante em caso de rompimento da barragem',
-#  'Outras substâncias minerais presentes no reservatório',
-#  'PAE - Plano de Ação Emergencial (quando exigido pelo órgão fiscalizador)',
-#  'Percolação',
-#  'Posicionamento',
-#  'Posicionamento (Back Up Dam)',
-#  'Previsão de término de construção da Back Up Dam',
-#  'Processo de beneficiamento',
-#  'Processos associados (Back Up Dam)',
-#  'Produtos químicos utilizados',
-#  'Quantidade Diques Internos',
-#  'Quantidade Diques Selantes',
-#  'RT/Declaração',
-#  'RT/Empreendimento',
-#  'Relatórios de inspeção e monitoramento da instrumentação e de Análise de Segurança',
-#  'Situação Operacional',
-#  'Situação operacional da Back Up Dam',
-#  'Status da DCE Atual',
-#  'Teor (%) do minério principal inserido no rejeito',
-#  'Tipo de Back Up Dam quanto ao material de construção',
-#  'Tipo de Barragem de Mineração',
-#  'Tipo de alteamento',
-#  'Tipo de auscultação',
-#  'Tipo de auscultação da Back Up Dam',
-#  'Tipo de barragem quanto ao material de construção',
-#  'Tipo de fundação',
-#  'Tipo de fundação da Back Up Dam',
-#  'UF',
-#  'UF (Back Up Dam)',
-#  'Usinas',
-#  'Vazão de projeto',
-#  'Vazão de projeto da Back Up Dam',
-#  'Vida útil prevista da Back Up Dam (Anos)',
-#  'Vida útil prevista da Barragem (anos)',
-#  'Volume atual do Reservatório (m³)',
-#  'Volume de projeto licenciado do Reservatório (m³)',
-#  'Volume do projeto da Back Up Dam (m³)',
-#  'Área do reservatório (m²)']
 
 barragem_cols = dfs_barragens.columns
 
@@ -256,25 +180,26 @@ for coluna in municipio_cols:
     coluna_nova = coluna.replace(" ", "_")
     coluna_nova = coluna_nova.replace(".", "")
     dfs_municipio = dfs_municipio.withColumnRenamed(coluna, coluna_nova)
-    
+
+ 
 arrecadacao = Arquivo('arrecadacao.parquet','original','soulcode-mineracao', dfs_arrecadacao, 'parquet')
 autuacao = Arquivo('autuacao.parquet', 'original', 'soulcode-mineracao', dfs_autuacao, 'parquet')
-barragens = Arquivo('barragens.parquet', 'original', 'soulcode-mineracao', dfs_barragens, 'parquet')
-beneficiada = Arquivo('beneficiada.parquet','original', 'soulcode-mineracao', dfs_beneficiada, 'parquet')
-dados_populacao = Arquivo('dados_populacao.parquet', 'original', 'soulcode-mineracao', dfs_dados_populacao, 'parquet')
+# barragens = Arquivo('barragens.parquet', 'original', 'soulcode-mineracao', dfs_barragens, 'parquet')
+# beneficiada = Arquivo('beneficiada.parquet','original', 'soulcode-mineracao', dfs_beneficiada, 'parquet')
+# dados_populacao = Arquivo('dados_populacao.parquet', 'original', 'soulcode-mineracao', dfs_dados_populacao, 'parquet')
 distribuicao = Arquivo('distribuicao.parquet', 'original', 'soulcode-mineracao', dfs_distribuicao, 'parquet')
-municipio = Arquivo('municipio.parquet','original', 'soulcode-mineracao', dfs_municipio, 'parquet')
-pib = Arquivo('pib.parquet','original', 'soulcode-mineracao', dfs_pib, 'parquet')
+# municipio = Arquivo('municipio.parquet','original', 'soulcode-mineracao', dfs_municipio, 'parquet')
+# pib = Arquivo('pib.parquet','original', 'soulcode-mineracao', dfs_pib, 'parquet')
 
 # Enviando todos os arquivos para o bucket:
 arrecadacao.envia_arquivo()
 autuacao.envia_arquivo()
-barragens.envia_arquivo()
-beneficiada.envia_arquivo()
-try:
-  dados_populacao.envia_arquivo()
-except Exception:
-  pass
+# barragens.envia_arquivo()
+# beneficiada.envia_arquivo()
+# try:
+#   dados_populacao.envia_arquivo()
+# except Exception:
+#   pass
 distribuicao.envia_arquivo()
-municipio.envia_arquivo()
-pib.envia_arquivo()
+# municipio.envia_arquivo()
+# pib.envia_arquivo()

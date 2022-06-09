@@ -30,7 +30,7 @@ class Dataproc:
                     "boot_disk_type": "pd-standard"
                     },
                     "image_uri": "https://www.googleapis.com/compute/v1/projects/cloud-dataproc/global/images/dataproc-2-0-deb10-20220531-170200-rc01",
-                    "machine_type_uri": "https://www.googleapis.com/compute/v1/projects/projeto-mineracao-soulcode/zones/us-east1-d/machineTypes/n1-standard-4",
+                    "machine_type_uri": "https://www.googleapis.com/compute/v1/projects/projeto-mineracao-soulcode/zones/us-east1-d/machineTypes/n2-highmem-4",
                     "num_instances": 1,
                 },
                 "software_config": {
@@ -46,7 +46,7 @@ class Dataproc:
                     "boot_disk_type": "pd-standard"
                     },
                     "image_uri": "https://www.googleapis.com/compute/v1/projects/cloud-dataproc/global/images/dataproc-2-0-deb10-20220531-170200-rc01",
-                    "machine_type_uri": "https://www.googleapis.com/compute/v1/projects/projeto-mineracao-soulcode/zones/us-east1-d/machineTypes/n1-standard-2",
+                    "machine_type_uri": "https://www.googleapis.com/compute/v1/projects/projeto-mineracao-soulcode/zones/us-east1-d/machineTypes/n2-highmem-2",
                     "num_instances": 2,
                 }
                 },
