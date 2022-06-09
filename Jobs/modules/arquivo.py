@@ -22,7 +22,10 @@ class Arquivo:
         bucket = storage_client.bucket(self.bucket_name)
 
         # Enviando o arquivo para o bucket na pasta desejada:
-        self.dfs.coalesce(1).write.option("header", True).option("encoding", "latin1").save(f'gs://{self.bucket_name}/deletar/{self.nome}', format=self.tipo)
+        if self.tipo == 'json':
+            self.dfs.coalesce(1).write.json(f'gs://{self.bucket_name}/deletar/{self.nome}')
+        else:
+          self.dfs.coalesce(1).write.option("header", True).option("encoding", "latin1").save(f'gs://{self.bucket_name}/deletar/{self.nome}', format=self.tipo)
 
         # Renomeando do arquivo para o nome desejado - Pegando o blob antigo:
         blobs = storage_client.list_blobs(self.bucket_name)
