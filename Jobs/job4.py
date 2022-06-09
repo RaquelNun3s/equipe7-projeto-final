@@ -6,9 +6,9 @@ import pyspark
 from pyspark import SparkContext
 from pyspark.sql import SparkSession
 from pyspark.sql import SQLContext
-
 import pandas as pd
 from datetime import datetime
+from google.cloud import storage
 
 # Função para fazer a verificação de texto
 def verificacao_texto(data_frame, coluna, tamanho_texto: None, numeros: bool):
@@ -140,6 +140,52 @@ class Conector_mongo():
                    .option('uri', mongo_ip + self.collection).load()) 
         return self.df
 
+class Arquivo:
+    def __init__(self, nome, pasta, bucket_name, dfs, tipo):
+        self.nome = nome
+        self.pasta = pasta
+        self.bucket_name = bucket_name
+        self.dfs = dfs
+        self.tipo = tipo
+  
+    def envia_arquivo(self):
+        '''
+        Essa função tem como objetivo enviar e organizar arquivos no bucket do csv
+        nome = nome do arquivo que vai ser enviado ex: 'dados.csv'
+        pasta = nome da pasta do arquivo que será enviado, no formato 'nome_pasta/'
+        bucket = nome do bucket em que o arquivo será enviado ex:'nome-bucket'
+        dfs = dataframe do spark que será convertida e enviada
+        tipo = tipo do arquivo que será enviado ex: csv
+        '''
+        # Conectando com o cloud storage
+        storage_client = storage.Client()
+        bucket = storage_client.bucket(self.bucket_name)
+
+        # Enviando o arquivo para o bucket na pasta desejada:
+        if self.tipo == 'json':
+            self.dfs.coalesce(1).write.json(f'gs://{self.bucket_name}/deletar2/{self.nome}')
+        else:
+          self.dfs.coalesce(1).write.option("header", True).option("encoding", "latin1").save(f'gs://{self.bucket_name}/deletar2/{self.nome}', format=self.tipo)
+
+        # Renomeando do arquivo para o nome desejado - Pegando o blob antigo:
+        blobs = storage_client.list_blobs(self.bucket_name)
+        for blob in blobs:
+            blob_name = str(blob)
+            list_blob = blob_name.split(',')
+            blob_path = list_blob[1]
+            if f"deletar2/{self.nome}/part" in blob_path:
+                blob_antigo = blob
+                blob_antigo_nome = blob_path
+
+        # Movendo o arquivo para a pasta desejada:
+        blob_copy = bucket.copy_blob(blob_antigo, bucket, f'{self.pasta}/{self.nome}')
+
+        blob_antigo_nome = blob_antigo_nome.split(" ")
+        blob_antigo_nome = blob_antigo_nome[1]
+
+        # Deletando a pasta com os arquivos anteriores:
+        bucket.delete_blob(blob_antigo_nome)
+        
 # Criando a SparkSession:
 conf =( pyspark.SparkConf()
                .set("spark.jars.packages","org.mongodb.spark:mongo-spark-connector_2.12:3.0.1")
@@ -201,7 +247,12 @@ dfp_arrecadacao['QuantidadeComercializada'] = dfp_arrecadacao['QuantidadeComerci
 dfp_arrecadacao['ValorRecolhido'] = dfp_arrecadacao['ValorRecolhido'].str.replace(',', '.')
 dfp_arrecadacao['QuantidadeComercializada'] = dfp_arrecadacao['QuantidadeComercializada'].astype(float)
 dfp_arrecadacao['ValorRecolhido'] = dfp_arrecadacao['ValorRecolhido'].astype(float)
-
+dfp_arrecadacao['UnidadeDeMedida'].replace(to_replace='m3', value='Metros Cubicos', inplace=True)
+dfp_arrecadacao['UnidadeDeMedida'].replace(to_replace='t', value='Toneladas', inplace=True)
+dfp_arrecadacao['UnidadeDeMedida'].replace(to_replace='l', value='Litros', inplace=True)
+dfp_arrecadacao['UnidadeDeMedida'].replace(to_replace='g', value='Gramas', inplace=True)
+dfp_arrecadacao['UnidadeDeMedida'].replace(to_replace='m2', value='Metros Quadrados', inplace=True)
+dfp_arrecadacao['UnidadeDeMedida'].replace(to_replace='ct', value='Quilates', inplace=True)
 # Conferindo resultados
 
 print(dfp_arrecadacao)
@@ -296,8 +347,7 @@ verificacao_valor_padrao(dfp_barragens, 'Vida útil prevista da Barragem (anos)'
 verificacao_valor_padrao(dfp_barragens, 'Estrutura com o Objetivo de Contenção')
 verificacao_valor_padrao(dfp_barragens, 'Minério principal presente no reservatório')
 verificacao_valor_padrao(dfp_barragens, 'Número de pessoas possivelmente afetadas a jusante em caso de rompimento da barragem')
-verificacao_valor_padrao(dfp_barragens, 'Impacto ambiental')
-verificacao_valor_padrao(dfp_barragens, 'Impacto sócio-econômico')
+
 
 # Tratamento do DataFrame
 
@@ -354,7 +404,7 @@ spark.conf.set("spark.sql.execution.arrow.enabled", "true")
 dft_arrecadacao = spark.createDataFrame(dfp_arrecadacao)
 dft_barragens = spark.createDataFrame(dfp_barragens)
 dft_dados_populacao = spark.createDataFrame(dfp_dados_populacao)
-dft_pip = spark.createDataFrame(dfp_pib)
+dft_pib = spark.createDataFrame(dfp_pib)
 
 # Fazendo a conexão com o mongo:
 db_conexao_tratada = Conector_mongo('soulcode-mineracao', 'mongodb', 'tratados')
@@ -363,4 +413,15 @@ db_conexao_tratada = Conector_mongo('soulcode-mineracao', 'mongodb', 'tratados')
 db_conexao_tratada.inserir_mongo(dft_arrecadacao, 'arrecadacao')
 db_conexao_tratada.inserir_mongo(dft_barragens, 'barragens')
 db_conexao_tratada.inserir_mongo(dft_dados_populacao, 'dados_populacao')
-db_conexao_tratada.inserir_mongo(dft_pip, 'pib')
+db_conexao_tratada.inserir_mongo(dft_pib, 'pib')
+
+# Enviando os dados tratados para o bucket:
+arrecadacao = Arquivo('arrecadacao.csv','tratados','soulcode-mineracao', dft_arrecadacao, 'csv')
+barragens = Arquivo('barragens.csv', 'tratados', 'soulcode-mineracao', dft_barragens, 'csv')
+dados_populacao = Arquivo('dados_populacao.json', 'tratados', 'soulcode-mineracao', dft_dados_populacao, 'csv')
+pib = Arquivo('pib.csv','tratados', 'soulcode-mineracao', dft_pib, 'csv')
+
+arrecadacao.envia_arquivo()
+barragens.envia_arquivo()
+dados_populacao.envia_arquivo()
+pib.envia_arquivo()
