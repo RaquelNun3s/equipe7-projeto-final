@@ -1,5 +1,4 @@
 # Importando modulos
-from time import time
 import pandas as pd
 from sqlalchemy import create_engine
 
@@ -44,7 +43,6 @@ except Exception as e:
 # Carregando as dataframes no MySQL
 try:
     print('Carregando as dataframes...')
-    inicio = time()
     df_arrecadacao.to_sql('arrecadacao',con=cnx, if_exists='append')
     df_autuacao.to_sql('autuacao',con=cnx, if_exists='append')
     df_barragens.rename(columns= {
@@ -71,7 +69,6 @@ try:
     df_distribuicao.to_sql('distribuicao',con=cnx, if_exists='append')
     df_municipio.to_sql('municipio',con=cnx, if_exists='append')
     df_pib.to_sql('pib',con=cnx, if_exists='append')
-    fim = time.time()
     print(f"Carregamento concluido em {(float((fim - inicio)%60))} seg.")
 except Exception as e:
     print("Error: ". str(e))
