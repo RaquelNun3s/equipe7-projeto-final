@@ -253,6 +253,9 @@ dfp_arrecadacao['UnidadeDeMedida'].replace(to_replace='l', value='Litros', inpla
 dfp_arrecadacao['UnidadeDeMedida'].replace(to_replace='g', value='Gramas', inplace=True)
 dfp_arrecadacao['UnidadeDeMedida'].replace(to_replace='m2', value='Metros Quadrados', inplace=True)
 dfp_arrecadacao['UnidadeDeMedida'].replace(to_replace='ct', value='Quilates', inplace=True)
+dfp_arrecadacao.replace(to_replace='OURO', value='MINÉRIO DE OURO', inplace=True)
+dfp_arrecadacao.replace(to_replace='FERRO', value='MINÉRIO DE FERRO', inplace=True)
+dfp_arrecadacao.replace(to_replace='COBRE', value='MINÉRIO DE COBRE', inplace=True)
 # Conferindo resultados
 
 print(dfp_arrecadacao)
@@ -409,16 +412,18 @@ dft_pib = spark.createDataFrame(dfp_pib)
 # Fazendo a conexão com o mongo:
 db_conexao_tratada = Conector_mongo('soulcode-mineracao', 'mongodb', 'tratados')
 
+'''
 # Enviando os dados tratados para o mongo:
 db_conexao_tratada.inserir_mongo(dft_arrecadacao, 'arrecadacao')
 db_conexao_tratada.inserir_mongo(dft_barragens, 'barragens')
 db_conexao_tratada.inserir_mongo(dft_dados_populacao, 'dados_populacao')
 db_conexao_tratada.inserir_mongo(dft_pib, 'pib')
+'''
 
 # Enviando os dados tratados para o bucket:
 arrecadacao = Arquivo('arrecadacao.csv','tratados','soulcode-mineracao', dft_arrecadacao, 'csv')
 barragens = Arquivo('barragens.csv', 'tratados', 'soulcode-mineracao', dft_barragens, 'csv')
-dados_populacao = Arquivo('dados_populacao.json', 'tratados', 'soulcode-mineracao', dft_dados_populacao, 'csv')
+dados_populacao = Arquivo('dados_populacao.csv', 'tratados', 'soulcode-mineracao', dft_dados_populacao, 'csv')
 pib = Arquivo('pib.csv','tratados', 'soulcode-mineracao', dft_pib, 'csv')
 
 arrecadacao.envia_arquivo()
