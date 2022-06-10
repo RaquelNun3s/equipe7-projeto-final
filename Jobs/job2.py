@@ -1,6 +1,7 @@
 # Importando modulos
 import pandas as pd
 from sqlalchemy import create_engine
+from pyspark.sql import SparkSession
 
 # Criando a classe para conexão
 class Interface_MySQL:
@@ -20,6 +21,16 @@ class Interface_MySQL:
             return cnx
         except Exception as e:
             print("Error: ", str(e))
+# Conectando com a sparkSession
+spark = ( SparkSession.builder
+                        .master("local")
+                        .appName("job-1")
+                        .config("spark.ui.port", "4050")
+                        .config("spark.jars", 'https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop2-latest.jar')
+                        .getOrCreate() 
+        )
+
+spark.conf.set("mapreduce.fileoutputcommitter.marksuccessfuljobs", "false")
 
 # Instanciando a classe
 conexao = Interface_MySQL("root", ">}Dzh.=}YhZ#(G>s", "34.72.50.43", "original")
@@ -29,14 +40,27 @@ cnx = conexao.create_engine()
 
 # Instanciando as dataframes através do bucket
 try:
-    df_arrecadacao = pd.read_csv('gs://soulcode-mineracao/original/arrecadacao.csv', sep=',', encoding='latin-1')
-    df_autuacao = pd.read_csv('gs://soulcode-mineracao/original/autuacao.csv', sep=',', encoding='latin-1')
-    df_barragens = pd.read_csv('gs://soulcode-mineracao/original/barragens.csv', sep=',', encoding='latin-1')
-    df_beneficiada = pd.read_csv('gs://soulcode-mineracao/original/beneficiada.csv', sep=',', encoding='latin-1')
-    df_dados_populacao = pd.read_json('gs://soulcode-mineracao/original/dados_populacao.json', lines=True)
-    df_distribuicao = pd.read_csv('gs://soulcode-mineracao/original/distribuicao.csv', sep=',', encoding='latin-1')
-    df_municipio = pd.read_csv('gs://soulcode-mineracao/original/municipio.csv', sep=',', encoding='latin-1')
-    df_pib = pd.read_csv('gs://soulcode-mineracao/original/pib.csv', sep=',', encoding='latin-1')
+    print("Lendo as DFs pelo spark...")
+    # Lendo as dataframes utilizando o spark
+    dfs_arrecadacao = spark.read.csv(path='gs://soulcode-mineracao/original/arrecadacao.csv', inferSchema=True, header=True, sep=',', encoding='latin1')
+    dfs_autuacao = spark.read.csv(path='gs://soulcode-mineracao/original/autuacao.csv', inferSchema=True, header=True, sep=',', encoding='latin1')
+    dfs_barragens = spark.read.csv(path='gs://soulcode-mineracao/original/barragens.csv', inferSchema=True, header=True, sep=',', encoding='latin1')
+    dfs_beneficiada = spark.read.csv(path='gs://soulcode-mineracao/original/beneficiada.csv', inferSchema=True, header=True, sep=',', encoding='latin1')
+    dfs_dados_populacao = spark.read.json('gs://soulcode-mineracao/original/dados_populacao.json', multiLine=True)
+    dfs_distribuicao = spark.read.csv(path='gs://soulcode-mineracao/original/distribuicao.csv', inferSchema=True, header=True, sep=',', encoding='latin1')
+    dfs_municipio = spark.read.csv(path='gs://soulcode-mineracao/original/municipio.csv', inferSchema=True, header=True, sep=',', encoding='latin1')
+    dfs_pib = spark.read.csv(path='gs://soulcode-mineracao/original/pib.csv', inferSchema=True, header=True, sep=',', encoding='latin1')
+
+    # Convertendo as dataframes para pandas:
+    print("Convertendo as DFs para Pandas...")
+    df_arrecadacao = dfs_arrecadacao.toPandas()
+    df_autuacao = dfs_autuacao.toPandas()
+    df_barragens = dfs_barragens.toPandas()
+    df_beneficiada = dfs_beneficiada.toPandas()
+    df_dados_populacao = dfs_dados_populacao.toPandas()
+    df_distribuicao = dfs_distribuicao.toPandas()
+    df_municipio = dfs_municipio.toPandas()
+    df_pib = dfs_pib.toPandas()
 except Exception as e:
     print("Error: ". str(e))
             
@@ -65,10 +89,11 @@ try:
     'Unidade de Medida - Transferência para Transformação / Utilização / Consumo':'Unidade - Transf Transformação / Utilização / Consumo',
     'Valor Transferência para Transformação / Utilização / Consumo (R$)':'Valor Transf Transformação / Utilização / Consumo (R$)'
 }, inplace = True)
+    df_beneficiada.to_sql('beneficiada', con=cnx, if_exists='append')
     df_dados_populacao.to_sql('dados_populacao',con=cnx, if_exists='append')
     df_distribuicao.to_sql('distribuicao',con=cnx, if_exists='append')
     df_municipio.to_sql('municipio',con=cnx, if_exists='append')
     df_pib.to_sql('pib',con=cnx, if_exists='append')
-    print(f"Carregamento concluido em {(float((fim - inicio)%60))} seg.")
+    
 except Exception as e:
     print("Error: ". str(e))

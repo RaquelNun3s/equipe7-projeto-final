@@ -1,179 +1,77 @@
 {
-  "clusterName": "cluster-2995",
-  "clusterUuid": "ce2f5172-962e-4581-9546-02c72af67ad0",
+  "clusterName": self.cluster_nome,
   "config": {
-    "configBucket": "dataproc-staging-us-east1-401706537240-tniv1tgm",
-    "endpointConfig": {},
+    "configBucket": "soulcode-mineracao",
+    "endpointConfig": {
+      "enableHttpPortAccess": true,
+      "httpPorts": {
+        "HDFS NameNode": "https://teqzt2m7qvhchgflh5lqwwyn6q-dot-us-east1.dataproc.googleusercontent.com/hdfs/dfshealth.html",
+        "Jupyter": "https://teqzt2m7qvhchgflh5lqwwyn6q-dot-us-east1.dataproc.googleusercontent.com/gateway/default/jupyter/",
+        "JupyterLab": "https://teqzt2m7qvhchgflh5lqwwyn6q-dot-us-east1.dataproc.googleusercontent.com/gateway/default/jupyter/lab/",
+        "MapReduce Job History": "https://teqzt2m7qvhchgflh5lqwwyn6q-dot-us-east1.dataproc.googleusercontent.com/jobhistory/",
+        "Spark History Server": "https://teqzt2m7qvhchgflh5lqwwyn6q-dot-us-east1.dataproc.googleusercontent.com/sparkhistory/",
+        "Tez": "https://teqzt2m7qvhchgflh5lqwwyn6q-dot-us-east1.dataproc.googleusercontent.com/apphistory/tez-ui/",
+        "YARN Application Timeline": "https://teqzt2m7qvhchgflh5lqwwyn6q-dot-us-east1.dataproc.googleusercontent.com/apphistory/",
+        "YARN ResourceManager": "https://teqzt2m7qvhchgflh5lqwwyn6q-dot-us-east1.dataproc.googleusercontent.com/yarn/"
+      }
+    },
     "gceClusterConfig": {
       "metadata": {
         "PIP_PACKAGES": "pyspark==3.0.1",
-        "PyMySQL": "=1.0.2",
         "SQLAlchemy": "=1.4.37",
-        "google-cloud-storage": "=1.38.0"
+        "google-cloud-storage": "=1.38.0",
+        "mysql-connector-python": "=8.0.29",
+        "pymysql": "=1.0.2"
       },
       "networkUri": "https://www.googleapis.com/compute/v1/projects/projeto-mineracao-soulcode/global/networks/default",
-      "serviceAccountScopes": [
-        "https://www.googleapis.com/auth/bigquery",
-        "https://www.googleapis.com/auth/bigtable.admin.table",
-        "https://www.googleapis.com/auth/bigtable.data",
-        "https://www.googleapis.com/auth/cloud.useraccounts.readonly",
-        "https://www.googleapis.com/auth/devstorage.full_control",
-        "https://www.googleapis.com/auth/devstorage.read_write",
-        "https://www.googleapis.com/auth/logging.write"
-      ],
-      "zoneUri": "https://www.googleapis.com/compute/v1/projects/projeto-mineracao-soulcode/zones/us-east1-d"
+      "zoneUri": "https://www.googleapis.com/compute/v1/projects/projeto-mineracao-soulcode/zones/us-east1-c"
+    },
+    "initializationActions": [
+      {
+        "executableFile": "gs://soulcode-mineracao/script_inicializacao.sh",
+        "executionTimeout": "600s"
+      }
+    ],
+    "lifecycleConfig": {
+      "idleDeleteTtl": "14400s"
     },
     "masterConfig": {
       "diskConfig": {
-        "bootDiskSizeGb": 200,
+        "bootDiskSizeGb": 300,
         "bootDiskType": "pd-standard"
       },
-      "imageUri": "https://www.googleapis.com/compute/v1/projects/cloud-dataproc/global/images/dataproc-2-0-deb10-20220531-170200-rc01",
+      "imageUri": "https://www.googleapis.com/compute/v1/projects/cloud-dataproc/global/images/dataproc-1-5-deb10-20220531-170200-rc01",
       "instanceNames": [
-        "cluster-2995-m"
+        "cluster-478a-m"
       ],
-      "machineTypeUri": "https://www.googleapis.com/compute/v1/projects/projeto-mineracao-soulcode/zones/us-east1-d/machineTypes/n1-standard-2",
+      "machineTypeUri": "https://www.googleapis.com/compute/v1/projects/projeto-mineracao-soulcode/zones/us-east1-c/machineTypes/n1-standard-4",
       "minCpuPlatform": "AUTOMATIC",
       "numInstances": 1,
       "preemptibility": "NON_PREEMPTIBLE"
     },
     "softwareConfig": {
-      "imageVersion": "2.0.42-debian10",
+      "imageVersion": "1.5.68-debian10",
+      "optionalComponents": [
+        "JUPYTER",
+        "ANACONDA"
+      ],
       "properties": {
-        "capacity-scheduler:yarn.scheduler.capacity.root.default.ordering-policy": "fair",
-        "core:fs.gs.block.size": "134217728",
-        "core:fs.gs.metadata.cache.enable": "false",
-        "core:hadoop.ssl.enabled.protocols": "TLSv1,TLSv1.1,TLSv1.2",
-        "distcp:mapreduce.map.java.opts": "-Xmx576m",
-        "distcp:mapreduce.map.memory.mb": "768",
-        "distcp:mapreduce.reduce.java.opts": "-Xmx576m",
-        "distcp:mapreduce.reduce.memory.mb": "768",
-        "hadoop-env:HADOOP_DATANODE_OPTS": "-Xmx512m",
-        "hdfs:dfs.datanode.address": "0.0.0.0:9866",
-        "hdfs:dfs.datanode.http.address": "0.0.0.0:9864",
-        "hdfs:dfs.datanode.https.address": "0.0.0.0:9865",
-        "hdfs:dfs.datanode.ipc.address": "0.0.0.0:9867",
-        "hdfs:dfs.namenode.handler.count": "20",
-        "hdfs:dfs.namenode.http-address": "0.0.0.0:9870",
-        "hdfs:dfs.namenode.https-address": "0.0.0.0:9871",
-        "hdfs:dfs.namenode.lifeline.rpc-address": "cluster-2995-m:8050",
-        "hdfs:dfs.namenode.secondary.http-address": "0.0.0.0:9868",
-        "hdfs:dfs.namenode.secondary.https-address": "0.0.0.0:9869",
-        "hdfs:dfs.namenode.service.handler.count": "10",
-        "hdfs:dfs.namenode.servicerpc-address": "cluster-2995-m:8051",
-        "hive:hive.fetch.task.conversion": "none",
-        "mapred-env:HADOOP_JOB_HISTORYSERVER_HEAPSIZE": "1920",
-        "mapred:mapreduce.job.maps": "9",
-        "mapred:mapreduce.job.reduce.slowstart.completedmaps": "0.95",
-        "mapred:mapreduce.job.reduces": "3",
-        "mapred:mapreduce.jobhistory.recovery.store.class": "org.apache.hadoop.mapreduce.v2.hs.HistoryServerLeveldbStateStoreService",
-        "mapred:mapreduce.map.cpu.vcores": "1",
-        "mapred:mapreduce.map.java.opts": "-Xmx2457m",
-        "mapred:mapreduce.map.memory.mb": "3072",
-        "mapred:mapreduce.reduce.cpu.vcores": "1",
-        "mapred:mapreduce.reduce.java.opts": "-Xmx2457m",
-        "mapred:mapreduce.reduce.memory.mb": "3072",
-        "mapred:mapreduce.task.io.sort.mb": "256",
-        "mapred:yarn.app.mapreduce.am.command-opts": "-Xmx2457m",
-        "mapred:yarn.app.mapreduce.am.resource.cpu-vcores": "1",
-        "mapred:yarn.app.mapreduce.am.resource.mb": "3072",
-        "spark-env:SPARK_DAEMON_MEMORY": "1920m",
-        "spark:spark.driver.maxResultSize": "960m",
-        "spark:spark.driver.memory": "1920m",
-        "spark:spark.executor.cores": "1",
-        "spark:spark.executor.instances": "2",
-        "spark:spark.executor.memory": "2688m",
-        "spark:spark.executorEnv.OPENBLAS_NUM_THREADS": "1",
-        "spark:spark.extraListeners": "com.google.cloud.spark.performance.DataprocMetricsListener",
-        "spark:spark.jars.packages": "org.mongodb.spark:mongo-spark-connector_2.12:3.0.1",
-        "spark:spark.scheduler.mode": "FAIR",
-        "spark:spark.sql.cbo.enabled": "true",
-        "spark:spark.ui.port": "0",
-        "spark:spark.yarn.am.memory": "640m",
-        "yarn-env:YARN_NODEMANAGER_HEAPSIZE": "768",
-        "yarn-env:YARN_RESOURCEMANAGER_HEAPSIZE": "1920",
-        "yarn-env:YARN_TIMELINESERVER_HEAPSIZE": "1920",
-        "yarn:yarn.nodemanager.address": "0.0.0.0:8026",
-        "yarn:yarn.nodemanager.resource.cpu-vcores": "2",
-        "yarn:yarn.nodemanager.resource.memory-mb": "6144",
-        "yarn:yarn.resourcemanager.nodemanager-graceful-decommission-timeout-secs": "86400",
-        "yarn:yarn.scheduler.maximum-allocation-mb": "6144",
-        "yarn:yarn.scheduler.minimum-allocation-mb": "1"
+        "spark:spark.jars.packages": "org.mongodb.spark:mongo-spark-connector_2.12:3.0.1"
       }
     },
-    "tempBucket": "dataproc-temp-us-east1-401706537240-xep7bxdp",
     "workerConfig": {
       "diskConfig": {
-        "bootDiskSizeGb": 300,
+        "bootDiskSizeGb": 200,
         "bootDiskType": "pd-standard"
       },
-      "imageUri": "https://www.googleapis.com/compute/v1/projects/cloud-dataproc/global/images/dataproc-2-0-deb10-20220531-170200-rc01",
-      "instanceNames": [
-        "cluster-2995-w-0",
-        "cluster-2995-w-1"
-      ],
-      "machineTypeUri": "https://www.googleapis.com/compute/v1/projects/projeto-mineracao-soulcode/zones/us-east1-d/machineTypes/n1-standard-2",
-      "minCpuPlatform": "AUTOMATIC",
-      "numInstances": 2,
-      "preemptibility": "NON_PREEMPTIBLE"
+      "imageUri": "https://www.googleapis.com/compute/v1/projects/cloud-dataproc/global/images/dataproc-1-5-deb10-20220531-170200-rc01",
+      "machineTypeUri": "https://www.googleapis.com/compute/v1/projects/projeto-mineracao-soulcode/zones/us-east1-c/machineTypes/n1-standard-2",
+      "numInstances": 2
     }
   },
   "labels": {
-    "goog-dataproc-cluster-name": "cluster-2995",
-    "goog-dataproc-cluster-uuid": "ce2f5172-962e-4581-9546-02c72af67ad0",
+    "goog-dataproc-cluster-name": "cluster-478a",
     "goog-dataproc-location": "us-east1"
   },
-  "metrics": {
-    "hdfsMetrics": {
-      "dfs-blocks-corrupt": "0",
-      "dfs-blocks-missing": "0",
-      "dfs-blocks-missing-repl-one": "0",
-      "dfs-blocks-pending-deletion": "0",
-      "dfs-blocks-under-replication": "0",
-      "dfs-capacity-present": "582311460864",
-      "dfs-capacity-remaining": "582311411712",
-      "dfs-capacity-total": "633733791744",
-      "dfs-capacity-used": "49152",
-      "dfs-nodes-decommissioned": "0",
-      "dfs-nodes-decommissioning": "0",
-      "dfs-nodes-running": "2"
-    },
-    "yarnMetrics": {
-      "yarn-apps-completed": "0",
-      "yarn-apps-failed": "0",
-      "yarn-apps-killed": "0",
-      "yarn-apps-pending": "0",
-      "yarn-apps-running": "0",
-      "yarn-apps-submitted": "0",
-      "yarn-containers-allocated": "0",
-      "yarn-containers-pending": "0",
-      "yarn-containers-reserved": "0",
-      "yarn-memory-mb-allocated": "0",
-      "yarn-memory-mb-available": "12288",
-      "yarn-memory-mb-pending": "0",
-      "yarn-memory-mb-reserved": "0",
-      "yarn-memory-mb-total": "12288",
-      "yarn-nodes-active": "2",
-      "yarn-nodes-decommissioned": "0",
-      "yarn-nodes-lost": "0",
-      "yarn-nodes-rebooted": "0",
-      "yarn-nodes-unhealthy": "0",
-      "yarn-vcores-allocated": "0",
-      "yarn-vcores-available": "4",
-      "yarn-vcores-pending": "0",
-      "yarn-vcores-reserved": "0",
-      "yarn-vcores-total": "4"
-    }
-  },
-  "projectId": "projeto-mineracao-soulcode",
-  "status": {
-    "state": "RUNNING",
-    "stateStartTime": "2022-06-08T17:49:33.152314Z"
-  },
-  "statusHistory": [
-    {
-      "state": "CREATING",
-      "stateStartTime": "2022-06-08T17:47:27.945414Z"
-    }
-  ]
+  "projectId": "projeto-mineracao-soulcode"
 }

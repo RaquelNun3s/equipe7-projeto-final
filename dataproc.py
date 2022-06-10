@@ -13,10 +13,13 @@ class Dataproc:
                 client_options={"api_endpoint": f"{self.regiao}-dataproc.googleapis.com:443"}
             )
             # Definindo as configurações do cluster:
-            cluster = cluster = {
+            cluster = {
                 "cluster_name": self.nome_cluster,
                 "config": {
                 "config_bucket": "soulcode-mineracao",
+                "endpoint_config": {
+                "enable_http_port_access": True,
+                },
                 "gce_cluster_config": {
                     "metadata": {
                     "PIP_PACKAGES": "pyspark==3.0.1",
@@ -24,17 +27,23 @@ class Dataproc:
                     },
                     "zone_uri": "https://www.googleapis.com/compute/v1/projects/projeto-mineracao-soulcode/zones/us-east1-d"
                 },
+                "initialization_actions": [{
+                "executable_file": "gs://soulcode-mineracao/script_inicializacao.sh"
+                }],
                 "master_config": {
                     "disk_config": {
                     "boot_disk_size_gb": 200,
                     "boot_disk_type": "pd-standard"
                     },
-                    "image_uri": "https://www.googleapis.com/compute/v1/projects/cloud-dataproc/global/images/dataproc-2-0-deb10-20220531-170200-rc01",
                     "machine_type_uri": "https://www.googleapis.com/compute/v1/projects/projeto-mineracao-soulcode/zones/us-east1-d/machineTypes/n2-highmem-4",
                     "num_instances": 1,
                 },
                 "software_config": {
-                    "image_version": "2.0.42-debian10",
+                    "image_version": "1.5.68-debian10",
+                    "optional_components": [
+                    "JUPYTER",
+                    "ANACONDA"
+                    ],
                     "properties": {
                     "spark:spark.jars.packages": "org.mongodb.spark:mongo-spark-connector_2.12:3.0.1",
                     "spark:spark.scheduler.mode": "FAIR",
@@ -45,7 +54,6 @@ class Dataproc:
                     "boot_disk_size_gb": 200,
                     "boot_disk_type": "pd-standard"
                     },
-                    "image_uri": "https://www.googleapis.com/compute/v1/projects/cloud-dataproc/global/images/dataproc-2-0-deb10-20220531-170200-rc01",
                     "machine_type_uri": "https://www.googleapis.com/compute/v1/projects/projeto-mineracao-soulcode/zones/us-east1-d/machineTypes/n2-highmem-2",
                     "num_instances": 2,
                 }

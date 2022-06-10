@@ -65,22 +65,6 @@ spark = ( SparkSession.builder
 
 spark.conf.set("mapreduce.fileoutputcommitter.marksuccessfuljobs", "false")
 
-esquema_arrecadacao = (
-    StructType([
-        StructField("Ano", IntegerType(), True),
-        StructField("AnoDoProcesso", IntegerType(), True),
-        StructField("CPF_CNPJ", StringType(), True),
-        StructField("Município", StringType(), True),
-        StructField("Mês", IntegerType(), True),
-        StructField("Processo", IntegerType(), True),
-        StructField("QuantidadeComercializada", StringType(), True),
-        StructField("Substância", StringType(), True),
-        StructField("Tipo_PF_PJ", StringType(), True),
-        StructField("UF", StringType(), True),
-        StructField("UnidadeDeMedida", StringType(), True),
-        StructField("ValorRecolhido", StringType(), True)
-    ])
-)
 # Puxando os arquivos dos seus locais de origem e criando as:
 dfs_arrecadacao = spark.read.csv(path='gs://mineracao2/arrecadacao.csv', inferSchema=True, header=True, sep=';', encoding='latin1')
 dfs_barragens = spark.read.csv(path='gs://mineracao2/Barragens.csv', inferSchema=True, header=True, sep=';', encoding='latin1') 
@@ -129,18 +113,6 @@ lista = ['IBGE_AL.json',
           'IBGE_SP.json',
           'IBGE_TO.json']
 
-# for filename in lista:
-#   spark.sparkContext.addFile('https://raw.githubusercontent.com/JoaoHenrique132/dados_populacao_IBGE/main/dados_populacao_IBGE_json/' + filename, recursive=True)
-# for filename in lista:
-#   df = spark.read.json(SparkFiles.get(filename))
-#   df = df.withColumn('UF', F.lit(filename[5:7]))
-#   dfs_dados_populacao = dfs_dados_populacao.union(df)
-  
-# for filename in lista:
-#   df = spark.read.json("hdfs:///mydata/" + filename)
-#   df = df.withColumn('UF', F.lit(filename[5:7]))
-#   dfs_dados_populacao = dfs_dados_populacao.union(df)
-  
 for filename in lista:
   df = pd.read_json(url + filename, lines=True)
   dfs = spark.createDataFrame(df)
@@ -148,58 +120,21 @@ for filename in lista:
   dfs_dados_populacao = dfs_dados_populacao.union(dfs)
   
 # Criando os objetos Arquivos:
-# arrecadacao = Arquivo('arrecadacao.csv','original','soulcode-mineracao', dfs_arrecadacao, 'csv')
-# autuacao = Arquivo('autuacao.csv', 'original', 'soulcode-mineracao', dfs_autuacao, 'csv')
-# barragens = Arquivo('barragens.csv', 'original', 'soulcode-mineracao', dfs_barragens, 'csv')
-# beneficiada = Arquivo('beneficiada.csv','original', 'soulcode-mineracao', dfs_beneficiada, 'csv')
-# dados_populacao = Arquivo('dados_populacao.json', 'original', 'soulcode-mineracao', dfs_dados_populacao, 'json')
-# distribuicao = Arquivo('distribuicao.csv', 'original', 'soulcode-mineracao', dfs_distribuicao, 'csv')
-# municipio = Arquivo('municipio.csv','original', 'soulcode-mineracao', dfs_municipio, 'csv')
-# pib = Arquivo('pib.csv','original', 'soulcode-mineracao', dfs_pib, 'csv')
-
-
-barragem_cols = dfs_barragens.columns
-
-for coluna in barragem_cols:
-      coluna_nova = coluna.replace(" ", "_")
-      coluna_nova = coluna_nova.replace("(", "")
-      coluna_nova = coluna_nova.replace(")", "")
-      coluna_nova = coluna_nova.replace("/", "ou")
-      dfs_barragens = dfs_barragens.withColumnRenamed(coluna, coluna_nova)
-      
-beneficiada_cols = dfs_beneficiada.columns
-for coluna in beneficiada_cols:
-    coluna_nova = coluna.replace(" ", "_")
-    coluna_nova = coluna_nova.replace("(", "")
-    coluna_nova = coluna_nova.replace(")", "")
-    coluna_nova = coluna_nova.replace("/", "ou")
-    dfs_beneficiada = dfs_beneficiada.withColumnRenamed(coluna, coluna_nova)
-
-municipio_cols = dfs_municipio.columns
-for coluna in municipio_cols:
-    coluna_nova = coluna.replace(" ", "_")
-    coluna_nova = coluna_nova.replace(".", "")
-    dfs_municipio = dfs_municipio.withColumnRenamed(coluna, coluna_nova)
-
- 
-arrecadacao = Arquivo('arrecadacao.parquet','original','soulcode-mineracao', dfs_arrecadacao, 'parquet')
-autuacao = Arquivo('autuacao.parquet', 'original', 'soulcode-mineracao', dfs_autuacao, 'parquet')
-# barragens = Arquivo('barragens.parquet', 'original', 'soulcode-mineracao', dfs_barragens, 'parquet')
-# beneficiada = Arquivo('beneficiada.parquet','original', 'soulcode-mineracao', dfs_beneficiada, 'parquet')
-# dados_populacao = Arquivo('dados_populacao.parquet', 'original', 'soulcode-mineracao', dfs_dados_populacao, 'parquet')
-distribuicao = Arquivo('distribuicao.parquet', 'original', 'soulcode-mineracao', dfs_distribuicao, 'parquet')
-# municipio = Arquivo('municipio.parquet','original', 'soulcode-mineracao', dfs_municipio, 'parquet')
-# pib = Arquivo('pib.parquet','original', 'soulcode-mineracao', dfs_pib, 'parquet')
+arrecadacao = Arquivo('arrecadacao.csv','original','soulcode-mineracao', dfs_arrecadacao, 'csv')
+autuacao = Arquivo('autuacao.csv', 'original', 'soulcode-mineracao', dfs_autuacao, 'csv')
+barragens = Arquivo('barragens.csv', 'original', 'soulcode-mineracao', dfs_barragens, 'csv')
+beneficiada = Arquivo('beneficiada.csv','original', 'soulcode-mineracao', dfs_beneficiada, 'csv')
+dados_populacao = Arquivo('dados_populacao.json', 'original', 'soulcode-mineracao', dfs_dados_populacao, 'json')
+distribuicao = Arquivo('distribuicao.csv', 'original', 'soulcode-mineracao', dfs_distribuicao, 'csv')
+municipio = Arquivo('municipio.csv','original', 'soulcode-mineracao', dfs_municipio, 'csv')
+pib = Arquivo('pib.csv','original', 'soulcode-mineracao', dfs_pib, 'csv')
 
 # Enviando todos os arquivos para o bucket:
 arrecadacao.envia_arquivo()
 autuacao.envia_arquivo()
-# barragens.envia_arquivo()
-# beneficiada.envia_arquivo()
-# try:
-#   dados_populacao.envia_arquivo()
-# except Exception:
-#   pass
+barragens.envia_arquivo()
+beneficiada.envia_arquivo()
+dados_populacao.envia_arquivo()
 distribuicao.envia_arquivo()
-# municipio.envia_arquivo()
-# pib.envia_arquivo()
+municipio.envia_arquivo()
+pib.envia_arquivo()
