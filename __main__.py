@@ -33,12 +33,12 @@ job1 = Job(region, project_id, gcs_bucket, 'job1.py', cluster_name)
 job2 = Job(region, project_id, gcs_bucket, 'job2.py', cluster_name)
 job3 = Job(region, project_id, gcs_bucket, 'job4.py', cluster_name)
 
-try:
-    job1.cria_job()
-    job2.cria_job()
-    job3.cria_job()
-except Exception as e:
-    print(str(e))
+# try:
+#     job1.cria_job()
+#     job2.cria_job()
+#     job3.cria_job()
+# except Exception as e:
+#     print(str(e))
 
 # Deletando o cluster para evitar cobranças
 cluster.deleta_cluster()
