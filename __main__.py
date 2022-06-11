@@ -26,7 +26,7 @@ gcs_bucket = "soulcode-mineracao"
 zone = "us-east1-c"
 
 cluster = Dataproc(cluster_name, region, project_id)#, zone)
-#cluster.cria_cluster()
+cluster.cria_cluster()
 
 # Enviando os jobs:
 job1 = Job(region, project_id, gcs_bucket, 'job1.py', cluster_name)
