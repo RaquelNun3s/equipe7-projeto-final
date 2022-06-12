@@ -1,10 +1,11 @@
 from google.cloud import dataproc_v1
 
 class Dataproc:
-    def __init__(self, nome_cluster, regiao, project_id):
+    def __init__(self, nome_cluster, regiao, project_id, zone):
         self.nome_cluster = nome_cluster
         self.regiao = regiao
         self.project_id = project_id
+        self.zone = zone
     
     def cria_cluster(self):
         try:
@@ -25,7 +26,7 @@ class Dataproc:
                     "PIP_PACKAGES": "pyspark==3.0.1",
                     "google-cloud-storage": "=1.38.0"
                     },
-                    "zone_uri": "https://www.googleapis.com/compute/v1/projects/projeto-mineracao-soulcode/zones/us-east1-d"
+                    "zone_uri": f"https://www.googleapis.com/compute/v1/projects/projeto-mineracao-soulcode/zones/{self.zone}"
                 },
                 "initialization_actions": [{
                 "executable_file": "gs://soulcode-mineracao/script_inicializacao.sh"
@@ -35,7 +36,7 @@ class Dataproc:
                     "boot_disk_size_gb": 200,
                     "boot_disk_type": "pd-standard"
                     },
-                    "machine_type_uri": "https://www.googleapis.com/compute/v1/projects/projeto-mineracao-soulcode/zones/us-east1-d/machineTypes/n2-highmem-4",
+                    "machine_type_uri": f"https://www.googleapis.com/compute/v1/projects/projeto-mineracao-soulcode/zones/{self.zone}/machineTypes/n1-highmem-4",
                     "num_instances": 1,
                 },
                 "software_config": {
@@ -54,7 +55,7 @@ class Dataproc:
                     "boot_disk_size_gb": 200,
                     "boot_disk_type": "pd-standard"
                     },
-                    "machine_type_uri": "https://www.googleapis.com/compute/v1/projects/projeto-mineracao-soulcode/zones/us-east1-d/machineTypes/n2-highmem-2",
+                    "machine_type_uri": f"https://www.googleapis.com/compute/v1/projects/projeto-mineracao-soulcode/zones/{self.zone}/machineTypes/n1-highmem-2",
                     "num_instances": 2,
                 }
                 },

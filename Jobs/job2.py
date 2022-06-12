@@ -46,7 +46,7 @@ try:
     dfs_autuacao = spark.read.csv(path='gs://soulcode-mineracao/original/autuacao.csv', inferSchema=True, header=True, sep=',', encoding='latin1')
     dfs_barragens = spark.read.csv(path='gs://soulcode-mineracao/original/barragens.csv', inferSchema=True, header=True, sep=',', encoding='latin1')
     dfs_beneficiada = spark.read.csv(path='gs://soulcode-mineracao/original/beneficiada.csv', inferSchema=True, header=True, sep=',', encoding='latin1')
-    dfs_dados_populacao = spark.read.json('gs://soulcode-mineracao/original/dados_populacao.json', multiLine=True)
+    dfs_dados_populacao = spark.read.json('gs://soulcode-mineracao/original/dados_populacao.json')
     dfs_distribuicao = spark.read.csv(path='gs://soulcode-mineracao/original/distribuicao.csv', inferSchema=True, header=True, sep=',', encoding='latin1')
     dfs_municipio = spark.read.csv(path='gs://soulcode-mineracao/original/municipio.csv', inferSchema=True, header=True, sep=',', encoding='latin1')
     dfs_pib = spark.read.csv(path='gs://soulcode-mineracao/original/pib.csv', inferSchema=True, header=True, sep=',', encoding='latin1')

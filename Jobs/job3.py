@@ -9,93 +9,9 @@ from pyspark.sql import SQLContext
 import pandas as pd
 from datetime import datetime
 from google.cloud import storage
+from sqlalchemy import true
 
 # Classes e funções necessáriaspara o funcionamento do código:
-def verificacao_texto(data_frame, coluna, tamanho_texto: None, numeros: bool):
-    '''
-    Função para identificar problemas em colunas que contenham apenas letras e números
-    '''
-    problemas = []
-    for i in range(len(data_frame)):
-        texto = data_frame.loc[i, coluna]
-        if numeros == False:
-            if texto.isalpha() == False:
-                problemas.append(data_frame.loc[i, coluna])
-            elif tamanho_texto != None:
-                if len(texto) != tamanho_texto:
-                    problemas.append(data_frame.loc[i, coluna])
-        elif numeros == True:
-            if texto.isalnum() == False:
-                problemas.append(data_frame.loc[i, coluna])
-            elif tamanho_texto != None:
-                if len(texto) != tamanho_texto:
-                    problemas.append(data_frame.loc[i, coluna])
-    # Imprimindo os problemas que deverão ser corrigidos:
-    df_problemas = pd.DataFrame(problemas, columns=["corrigir"])
-    df_problemas = pd.DataFrame(df_problemas.corrigir.unique(), columns=["Corrigir:"])
-
-    if len(df_problemas) > 0:
-        print(df_problemas)
-    else:
-        print("Nenhum problema detectado nesta coluna")
-    print(f"Verificação da coluna {coluna} concluída")
-
-
-def verificacao_tipo(data_frame, coluna, tipo: type):
-    '''
-    Função para verificar problemas relacionado ao tipo de dados que a coluna deve possuir
-    '''
-    problemas = []
-    for i in range(len(data_frame)):
-        try:
-            tipo(data_frame.loc[i, coluna])
-        except Exception:
-            problemas.append(data_frame.loc[i, coluna])
-    df_problemas = pd.DataFrame(problemas, columns=["corrigir"])
-    df_problemas = pd.DataFrame(df_problemas.corrigir.unique(), columns=["Corrigir: "])
-    print("--------------------------------------------------------------------")
-    print(f"Verificando a coluna {coluna}: ")
-    if len(df_problemas) > 0:
-        print(df_problemas)
-    else:
-        print("Nenhum problema detectado nessa coluna")
-    print(f"Verificação da coluna {coluna} concluída")
-    return df_problemas
-
-
-def verificacao_valor_padrao(data_frame, coluna):
-    '''
-    Função para identificar os valores únicos presentes em uma coluna, útil para caso de colunas que possuem valores padronizados, como por exemplo 'SIM' e 'NÃO'
-    '''
-    unicos = data_frame[coluna].unique()
-    print("---------------------------------------------------------------------")
-    print(f"Verificando valores únicos da coluna {coluna}: ")
-    print(unicos)
-    print("Verificação concluída")
-
-
-def verificacao_data(data_frame, coluna, formato: str):
-    '''
-    Função para verificar se todos os valores de uma coluna correspondem a data do formato especificado
-    '''
-    problemas = []
-    # Verificando se tratam-se de datas:
-    for i in range(len(data_frame)):
-        try:
-            datetime.now() - datetime.strptime(data_frame.loc[i, coluna], formato)
-        except Exception:
-            if data_frame.loc[i, coluna] != 'NULO':
-                problemas.append(data_frame.loc[i, coluna])
-    df_problemas = pd.DataFrame(problemas, columns=["Corrigir:"])
-    print("---------------------------------------------------------------------")
-    print(f"Verificando a coluna {coluna}: ")
-    if len(df_problemas) > 0:
-        print(df_problemas)
-    else:
-        print("Não há nenhum problema para corrigir")
-    print(f"Verificação da coluna {coluna} concluída! ")
-
-#Colocando a classe do mongo
 class Conector_mongo():
     '''
     Essa classe tem por objetivo realizar operações entre o pyspark e o mongodb atlas.
@@ -222,7 +138,7 @@ conf =( pyspark.SparkConf()
                .set("spark.jars.packages","org.mongodb.spark:mongo-spark-connector_2.12:3.0.1")
                .set("spark.jars", 'https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop2-latest.jar')
                .setMaster("local")
-               .setAppName("job-4")
+               .setAppName("job-3")
                .setAll([('spark.driver.memory', '40g'),('spark.executor.memory','50g')]))
 sc = SparkContext(conf=conf)
 spark = SparkSession(sc)
@@ -244,22 +160,6 @@ dfs_dados_populacao = conexao_mysql.ler_mysql('dados_populacao', spark)
 
 # Transformando DataFrame Arrecadação Spark em DataFrame Pandas
 dfp_arrecadacao = dfs_arrecadacao.toPandas()
-# Analisando dados
-dfp_arrecadacao.info()
-dfp_arrecadacao.info()
-dfp_arrecadacao.isna().sum()
-dfp_arrecadacao.duplicated().sum()
-dfp_arrecadacao.Ano.unique()
-dfp_arrecadacao.Mês.unique()
-verificacao_tipo(dfp_arrecadacao, 'Processo', int)
-verificacao_texto(dfp_arrecadacao, 'Tipo_PF_PJ', None, False)
-verificacao_valor_padrao(dfp_arrecadacao, 'Substância')
-verificacao_valor_padrao(dfp_arrecadacao, 'UF')
-verificacao_valor_padrao(dfp_arrecadacao, 'Município')
-verificacao_valor_padrao(dfp_arrecadacao, 'QuantidadeComercializada')
-verificacao_valor_padrao(dfp_arrecadacao, 'QuantidadeComercializada')
-verificacao_valor_padrao(dfp_arrecadacao, 'UnidadeDeMedida')
-verificacao_valor_padrao(dfp_arrecadacao, 'ValorRecolhido')
 
 # Tratamento dos dados
 dfp_arrecadacao.drop_duplicates()
@@ -281,25 +181,20 @@ dfp_arrecadacao['UnidadeDeMedida'].replace(to_replace='ct', value='Quilates', in
 dfp_arrecadacao.replace(to_replace='OURO', value='MINÉRIO DE OURO', inplace=True)
 dfp_arrecadacao.replace(to_replace='FERRO', value='MINÉRIO DE FERRO', inplace=True)
 dfp_arrecadacao.replace(to_replace='COBRE', value='MINÉRIO DE COBRE', inplace=True)
-# Conferindo resultados
-print(dfp_arrecadacao)
 
 # Transformando DataFrame PIB Spark em DataFrame Pandas
 dfp_pib = dfs_pib.toPandas()
 
-# Analisando dados
-dfp_pib.duplicated().sum()
-print(dfp_pib.isna().sum())
-print(dfp_pib.dtypes)
+# Tratamentos:
 dfp_pib.drop(['index'], axis=1, inplace=True)
-
+for i in range(len(dfp_pib)):
+    if dfp_pib.loc[i, "impostos_liquidos"] < 0:
+        dfp_pib.loc[i, "impostos_liquidos"] = (-1) * dfp_pib.loc[i, "impostos_liquidos"]
 
 # Transformando Dataframe Barragens Spark em Dataframe Pandas
 dfp_barragens = dfs_barragens.toPandas()
-# Analisando dados
 
-dfp_barragens.info()
-
+# Tratamento
 dfp_barragens.drop(['ID', 'index', 'Nome', 'CPF_CNPJ', 'Latitude',
        'Longitude', 'Posicionamento',
        'Dano Potencial Associado - DPA', 'Classe', 'Necessita de PAEBM',
@@ -356,22 +251,6 @@ dfp_barragens.drop(['ID', 'index', 'Nome', 'CPF_CNPJ', 'Latitude',
        'Data da Finalização da DCE', 'Motivo de Envio', 'RT/Declaração',
        'RT/Empreendimento','Impacto ambiental', 'Impacto sócio-econômico'], axis=1, inplace=True)
 
-dfp_barragens.isna().sum()
-print(dfp_barragens.dtypes)
-verificacao_tipo(dfp_barragens, 'N pessoas afetadas a jusante em caso de rompimento da barragem', float)
-verificacao_valor_padrao(dfp_barragens, 'Empreendedor')
-verificacao_valor_padrao(dfp_barragens, 'UF')
-verificacao_valor_padrao(dfp_barragens, 'Município')
-verificacao_valor_padrao(dfp_barragens, 'Categoria de Risco - CRI')
-verificacao_valor_padrao(dfp_barragens, 'Nível de Emergência')
-verificacao_valor_padrao(dfp_barragens, 'Tipo de Barragem de Mineração')
-verificacao_valor_padrao(dfp_barragens, 'Vida útil prevista da Barragem (anos)')
-verificacao_valor_padrao(dfp_barragens, 'Estrutura com o Objetivo de Contenção')
-verificacao_valor_padrao(dfp_barragens, 'Minério principal presente no reservatório')
-verificacao_valor_padrao(dfp_barragens, 'N pessoas afetadas a jusante em caso de rompimento da barragem')
-
-
-# Tratamento do DataFrame
 dfp_barragens['N pessoas afetadas a jusante em caso de rompimento da barragem'].replace(to_replace= 'o', value=np.nan, regex=True, inplace=True)
 dfp_barragens['N pessoas afetadas a jusante em caso de rompimento da barragem'].replace(to_replace= 'Sim', value=np.nan, regex=True, inplace=True)
 dfp_barragens['N pessoas afetadas a jusante em caso de rompimento da barragem'] = dfp_barragens['N pessoas afetadas a jusante em caso de rompimento da barragem'].replace([None], np.nan)
@@ -391,29 +270,21 @@ dfp_barragens['Vida útil prevista da Barragem (anos)'] = dfp_barragens['Vida ú
 # Transformando DataFrame Dados População Spark em DataFrame Pandas
 dfp_dados_populacao = dfs_dados_populacao.toPandas()
 
-# Analisando dados
-print(dfp_dados_populacao.dtypes)
-verificacao_valor_padrao(dfp_dados_populacao, 'Ano')
-verificacao_valor_padrao(dfp_dados_populacao, 'Esperança de Vida ao Nascer')
-verificacao_valor_padrao(dfp_dados_populacao, 'Esperança de Vida ao Nascer - Homens')
-verificacao_valor_padrao(dfp_dados_populacao, 'Esperança de Vida ao Nascer - Mulheres')
-verificacao_valor_padrao(dfp_dados_populacao, 'Homens')
-verificacao_valor_padrao(dfp_dados_populacao, 'Mulheres')
-verificacao_valor_padrao(dfp_dados_populacao, 'Nascimentos')
-verificacao_valor_padrao(dfp_dados_populacao, 'População total')
-verificacao_valor_padrao(dfp_dados_populacao, 'Razão de Dependência')
-verificacao_valor_padrao(dfp_dados_populacao, 'Razão de Dependência - Idosos 65 ou mais anos')
-verificacao_valor_padrao(dfp_dados_populacao, 'Razão de Dependência - Jovens 0 a 14 anos')
-verificacao_valor_padrao(dfp_dados_populacao, 'Taxa Bruta de Mortalidade')
-verificacao_valor_padrao(dfp_dados_populacao, 'Taxa Bruta de Natalidade')
-verificacao_valor_padrao(dfp_dados_populacao, 'Taxa de Crescimento Geométrico')
-verificacao_valor_padrao(dfp_dados_populacao, 'Taxa de Fecundidade Total')
-verificacao_valor_padrao(dfp_dados_populacao, 'Taxa de Mortalidade Infantil')
-verificacao_valor_padrao(dfp_dados_populacao, 'Taxa de Mortalidade Infantil - Homens')
-verificacao_valor_padrao(dfp_dados_populacao, 'Taxa de Mortalidade Infantil - Mulheres')
-verificacao_valor_padrao(dfp_dados_populacao, 'Índice de Envelhecimento')
-verificacao_valor_padrao(dfp_dados_populacao, 'Óbitos')
-verificacao_valor_padrao(dfp_dados_populacao, 'uf')
+# Tratamento:
+dfp_dados_populacao.drop(['index'], axis=1, inplace=True)
+
+# Transformando o dataframe municipio spark em Dataframe Pandas
+dfp_municipio = dfs_municipio.toPandas()
+
+# Tratamentos
+dfp_municipio.rename(columns={"COD. UF":"cod_uf", "COD. MUNIC":"cod_munic", "NOME DO MUNICÍPIO":"nome_municipio", "POPULAÇÃO ESTIMADA":"populacao_estimada"}, inplace=True)
+dfp_municipio["codigo_municipio"] = dfp_municipio["cod_uf"]*100000 + dfp_municipio["cod_munic"]
+dfp_municipio.populacao_estimada.replace('.', '', inplace=True, regex=True)
+for i in range(len(dfp_municipio)):
+    texto = str(dfp_municipio.loc[i, "populacao_estimada"])
+    if "(" in texto:
+        list_texto = texto.split('(')
+        dfp_municipio.loc[i, "populacao_estimada"] = list_texto[0]
 
 # Fazendo as configurações necessárias:
 spark.conf.set("spark.sql.execution.arrow.enabled", "true")
@@ -422,25 +293,27 @@ dft_arrecadacao = spark.createDataFrame(dfp_arrecadacao)
 dft_barragens = spark.createDataFrame(dfp_barragens)
 dft_dados_populacao = spark.createDataFrame(dfp_dados_populacao)
 dft_pib = spark.createDataFrame(dfp_pib)
+dft_municipio = spark.createDataFrame(dfp_municipio)
 
 # Fazendo a conexão com o mongo:
 db_conexao_tratada = Conector_mongo('soulcode-mineracao', 'mongodb', 'tratados')
-
 
 # Enviando os dados tratados para o mongo:
 db_conexao_tratada.inserir_mongo(dft_arrecadacao, 'arrecadacao')
 db_conexao_tratada.inserir_mongo(dft_barragens, 'barragens')
 db_conexao_tratada.inserir_mongo(dft_dados_populacao, 'dados_populacao')
 db_conexao_tratada.inserir_mongo(dft_pib, 'pib')
-
+db_conexao_tratada.inserir_mongo(dft_municipio, 'municipio')
 
 # Enviando os dados tratados para o bucket:
 arrecadacao = Arquivo('arrecadacao.csv','tratados','soulcode-mineracao', dft_arrecadacao, 'csv')
 barragens = Arquivo('barragens.csv', 'tratados', 'soulcode-mineracao', dft_barragens, 'csv')
 dados_populacao = Arquivo('dados_populacao.csv', 'tratados', 'soulcode-mineracao', dft_dados_populacao, 'csv')
 pib = Arquivo('pib.csv','tratados', 'soulcode-mineracao', dft_pib, 'csv')
+municipio = Arquivo('municipio.csv', 'tratados', 'soulcode-mineracao', dft_municipio, 'csv')
 
 arrecadacao.envia_arquivo()
 barragens.envia_arquivo()
 dados_populacao.envia_arquivo()
 pib.envia_arquivo()
+municipio.envia_arquivo()
