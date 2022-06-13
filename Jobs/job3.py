@@ -148,7 +148,7 @@ spark._jsc.hadoopConfiguration().set('fs.gs.impl', 'com.google.cloud.hadoop.fs.g
 # Conectando com o mySQL
 conexao_mysql = Conector_mysql("34.72.50.43", "root", ">}Dzh.=}YhZ#(G>s", "original")
 
-# Puxando os arquivos do mYSQL:
+# Puxando os arquivos do MySQL:
 dfs_arrecadacao = conexao_mysql.ler_mysql('arrecadacao', spark)
 dfs_barragens = conexao_mysql.ler_mysql('barragens', spark)
 dfs_autuacao = conexao_mysql.ler_mysql('autuacao', spark)
