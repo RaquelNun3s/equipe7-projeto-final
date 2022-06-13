@@ -169,6 +169,7 @@ dfp_arrecadacao.fillna(np.nan)
 dfp_arrecadacao.replace(to_replace='None', value=np.nan, inplace=True)
 dfp_arrecadacao.drop(['CPF_CNPJ', 'index'], axis=1, inplace=True)
 dfp_arrecadacao['QuantidadeComercializada'] = dfp_arrecadacao['QuantidadeComercializada'].str.replace(',', '.')
+dfp_arrecadacao['QuantidadeComercializada'] = dfp_arrecadacao['QuantidadeComercializada'].str.replace('"', '')
 dfp_arrecadacao['QuantidadeComercializada'].replace('""', 0)
 dfp_arrecadacao['ValorRecolhido'] = dfp_arrecadacao['ValorRecolhido'].str.replace(',', '.')
 dfp_arrecadacao['QuantidadeComercializada'] = dfp_arrecadacao['QuantidadeComercializada'].astype(float)
@@ -255,6 +256,8 @@ dfp_barragens.drop(['ID', 'index', 'N pessoas afetadas a jusante em caso de romp
 
 dfp_barragens.fillna(np.nan)
 dfp_barragens['Vida útil prevista da Barragem (anos)'] = dfp_barragens['Vida útil prevista da Barragem (anos)'].str.replace(',', '.')
+dfp_barragens['Nome'] = dfp_barragens['Nome'].str.replace(',', '.')
+dfp_barragens['Nome'] = dfp_barragens['Nome'].str.replace('"', '')
 dfp_barragens.replace(to_replace='-', value=np.nan, inplace=True)
 dfp_barragens['Vida útil prevista da Barragem (anos)'] = dfp_barragens['Vida útil prevista da Barragem (anos)'].astype(float)
 
