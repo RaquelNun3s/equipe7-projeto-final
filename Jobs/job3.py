@@ -20,7 +20,7 @@ class Conector_mongo():
         db = a database que será utilizada
         
     '''
-    def __init__(self, user, password, db):
+    def _init_(self, user, password, db):
         self.user = user
         self.password = password
         self.db = db
@@ -58,7 +58,7 @@ class Conector_mongo():
         return self.df
 
 class Arquivo:
-    def __init__(self, nome, pasta, bucket_name, dfs, tipo):
+    def _init_(self, nome, pasta, bucket_name, dfs, tipo):
         self.nome = nome
         self.pasta = pasta
         self.bucket_name = bucket_name
@@ -104,7 +104,7 @@ class Arquivo:
         bucket.delete_blob(blob_antigo_nome)
         
 class Conector_mysql:
-    def __init__(self, host, user, password, db):
+    def _init_(self, host, user, password, db):
         self.host = host
         self.user = user
         self.password = password
@@ -148,7 +148,7 @@ spark._jsc.hadoopConfiguration().set('fs.gs.impl', 'com.google.cloud.hadoop.fs.g
 # Conectando com o mySQL
 conexao_mysql = Conector_mysql("34.72.50.43", "root", ">}Dzh.=}YhZ#(G>s", "original")
 
-# Puxando os arquivos do mYSQL:
+# Puxando os arquivos do MySQL:
 dfs_arrecadacao = conexao_mysql.ler_mysql('arrecadacao', spark)
 dfs_barragens = conexao_mysql.ler_mysql('barragens', spark)
 dfs_autuacao = conexao_mysql.ler_mysql('autuacao', spark)
@@ -165,7 +165,6 @@ dfp_arrecadacao = dfs_arrecadacao.toPandas()
 dfp_arrecadacao.drop_duplicates()
 dfp_arrecadacao.replace(to_replace='ARGILA P/CER. VERMELH', value='ARGILA P/CER. VERMELHA', inplace=True)
 dfp_arrecadacao.replace(to_replace='-', value=np.nan, inplace=True)
-dfp_arrecadacao.fillna(np.nan)
 dfp_arrecadacao.replace(to_replace='None', value=np.nan, inplace=True)
 dfp_arrecadacao.drop(['CPF_CNPJ', 'index'], axis=1, inplace=True)
 dfp_arrecadacao['QuantidadeComercializada'] = dfp_arrecadacao['QuantidadeComercializada'].str.replace(',', '.')
@@ -255,6 +254,8 @@ dfp_barragens.drop(['ID', 'index', 'N pessoas afetadas a jusante em caso de romp
 
 dfp_barragens.fillna(np.nan)
 dfp_barragens['Vida útil prevista da Barragem (anos)'] = dfp_barragens['Vida útil prevista da Barragem (anos)'].str.replace(',', '.')
+dfp_barragens['Nome'] = dfp_barragens['Nome'].str.replace(',', '.')
+dfp_barragens['Nome'] = dfp_barragens['Nome'].str.replace('"', '')
 dfp_barragens.replace(to_replace='-', value=np.nan, inplace=True)
 dfp_barragens['Vida útil prevista da Barragem (anos)'] = dfp_barragens['Vida útil prevista da Barragem (anos)'].astype(float)
 

@@ -1,0 +1,23 @@
+{
+    "BigQuery Schema": [{
+      "name": "ano",
+      "type": "STRING"
+     },
+     {
+      "name": "material",
+      "type": "STRING"
+     },
+     {
+      "name": "estado",
+      "type": "STRING"
+     },
+     {
+      "name": "quantidade",
+      "type": "FLOAT"
+     },
+     {
+      "name": "unidade_medida",
+      "type": "STRING"
+       }
+    ]
+   }
