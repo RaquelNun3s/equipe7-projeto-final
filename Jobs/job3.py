@@ -169,6 +169,7 @@ dfp_arrecadacao.fillna(np.nan)
 dfp_arrecadacao.replace(to_replace='None', value=np.nan, inplace=True)
 dfp_arrecadacao.drop(['CPF_CNPJ', 'index'], axis=1, inplace=True)
 dfp_arrecadacao['QuantidadeComercializada'] = dfp_arrecadacao['QuantidadeComercializada'].str.replace(',', '.')
+dfp_arrecadacao['QuantidadeComercializada'].replace('""', 0)
 dfp_arrecadacao['ValorRecolhido'] = dfp_arrecadacao['ValorRecolhido'].str.replace(',', '.')
 dfp_arrecadacao['QuantidadeComercializada'] = dfp_arrecadacao['QuantidadeComercializada'].astype(float)
 dfp_arrecadacao['ValorRecolhido'] = dfp_arrecadacao['ValorRecolhido'].astype(float)
@@ -178,6 +179,7 @@ dfp_arrecadacao['UnidadeDeMedida'].replace(to_replace='l', value='Litros', inpla
 dfp_arrecadacao['UnidadeDeMedida'].replace(to_replace='g', value='Gramas', inplace=True)
 dfp_arrecadacao['UnidadeDeMedida'].replace(to_replace='m2', value='Metros Quadrados', inplace=True)
 dfp_arrecadacao['UnidadeDeMedida'].replace(to_replace='ct', value='Quilates', inplace=True)
+dfp_arrecadacao['UnidadeDeMedida'].replace(to_replace='kg', value='Quilograma', inplace=True)
 dfp_arrecadacao.replace(to_replace='OURO', value='MINÉRIO DE OURO', inplace=True)
 dfp_arrecadacao.replace(to_replace='FERRO', value='MINÉRIO DE FERRO', inplace=True)
 dfp_arrecadacao.replace(to_replace='COBRE', value='MINÉRIO DE COBRE', inplace=True)
@@ -195,7 +197,7 @@ for i in range(len(dfp_pib)):
 dfp_barragens = dfs_barragens.toPandas()
 
 # Tratamento
-dfp_barragens.drop(['ID', 'index', 'Nome', 'CPF_CNPJ', 'Latitude',
+dfp_barragens.drop(['ID', 'index', 'N pessoas afetadas a jusante em caso de rompimento da barragem', 'CPF_CNPJ', 'Latitude',
        'Longitude', 'Posicionamento',
        'Dano Potencial Associado - DPA', 'Classe', 'Necessita de PAEBM',
        'Inserido na PNSB', 'Status da DCE Atual',
@@ -221,7 +223,7 @@ dfp_barragens.drop(['ID', 'index', 'Nome', 'CPF_CNPJ', 'Latitude',
        'Tipo de Back Up Dam quanto ao material de construção',
        'Tipo de fundação da Back Up Dam', 'Vazão de projeto da Back Up Dam',
        'Método construtivo da Back Up Dam',
-       'Tipo de auscultação da Back Up Dam', 'Situação Operacional', 'Desde',
+       'Tipo de auscultação da Back Up Dam', 'Desde',
        'Está dentro da Área do Processo ANM ou da Área de Servidão',
        'Barragem de mineração é alimentado por usina', 'Usinas',
        'Processo de beneficiamento', 'Produtos químicos utilizados',
@@ -251,20 +253,9 @@ dfp_barragens.drop(['ID', 'index', 'Nome', 'CPF_CNPJ', 'Latitude',
        'Data da Finalização da DCE', 'Motivo de Envio', 'RT/Declaração',
        'RT/Empreendimento','Impacto ambiental', 'Impacto sócio-econômico'], axis=1, inplace=True)
 
-dfp_barragens['N pessoas afetadas a jusante em caso de rompimento da barragem'].replace(to_replace= 'o', value=np.nan, regex=True, inplace=True)
-dfp_barragens['N pessoas afetadas a jusante em caso de rompimento da barragem'].replace(to_replace= 'Sim', value=np.nan, regex=True, inplace=True)
-dfp_barragens['N pessoas afetadas a jusante em caso de rompimento da barragem'] = dfp_barragens['N pessoas afetadas a jusante em caso de rompimento da barragem'].replace([None], np.nan)
 dfp_barragens.fillna(np.nan)
-dfp_barragens['N pessoas afetadas a jusante em caso de rompimento da barragem'] = dfp_barragens['N pessoas afetadas a jusante em caso de rompimento da barragem'].str.replace('.', '')
-dfp_barragens['N pessoas afetadas a jusante em caso de rompimento da barragem'] = dfp_barragens['N pessoas afetadas a jusante em caso de rompimento da barragem'].str.replace(',', '.')
 dfp_barragens['Vida útil prevista da Barragem (anos)'] = dfp_barragens['Vida útil prevista da Barragem (anos)'].str.replace(',', '.')
 dfp_barragens.replace(to_replace='-', value=np.nan, inplace=True)
-dfp_barragens['N pessoas afetadas a jusante em caso de rompimento da barragem'].replace(to_replace='1-100', value=100, inplace=True)
-dfp_barragens['N pessoas afetadas a jusante em caso de rompimento da barragem'].replace(to_replace='101-500', value=500, inplace=True)
-dfp_barragens['N pessoas afetadas a jusante em caso de rompimento da barragem'].replace(to_replace='1001-5000', value=5000, inplace=True)
-dfp_barragens['N pessoas afetadas a jusante em caso de rompimento da barragem'].replace(to_replace='501-1000', value=1000, inplace=True)
-dfp_barragens['N pessoas afetadas a jusante em caso de rompimento da barragem'].replace(to_replace='acima de 5001', value=5001, inplace=True)
-dfp_barragens['N pessoas afetadas a jusante em caso de rompimento da barragem'] = dfp_barragens['N pessoas afetadas a jusante em caso de rompimento da barragem'].astype(float)
 dfp_barragens['Vida útil prevista da Barragem (anos)'] = dfp_barragens['Vida útil prevista da Barragem (anos)'].astype(float)
 
 # Transformando DataFrame Dados População Spark em DataFrame Pandas
@@ -273,19 +264,21 @@ dfp_dados_populacao = dfs_dados_populacao.toPandas()
 # Tratamento:
 dfp_dados_populacao.drop(['index'], axis=1, inplace=True)
 
+
 # Transformando o dataframe municipio spark em Dataframe Pandas
 dfp_municipio = dfs_municipio.toPandas()
 
 # Tratamentos
 dfp_municipio.rename(columns={"COD. UF":"cod_uf", "COD. MUNIC":"cod_munic", "NOME DO MUNICÍPIO":"nome_municipio", "POPULAÇÃO ESTIMADA":"populacao_estimada"}, inplace=True)
 dfp_municipio["codigo_municipio"] = dfp_municipio["cod_uf"]*100000 + dfp_municipio["cod_munic"]
-dfp_municipio.populacao_estimada.replace('.', '', inplace=True, regex=True)
+dfp_municipio['populacao_estimada'] = dfp_municipio['populacao_estimada'].str.replace('.', '')
+
 for i in range(len(dfp_municipio)):
     texto = str(dfp_municipio.loc[i, "populacao_estimada"])
     if "(" in texto:
         list_texto = texto.split('(')
         dfp_municipio.loc[i, "populacao_estimada"] = list_texto[0]
-
+dfp_municipio['populacao_estimada'] = dfp_municipio['populacao_estimada'].astype(float)
 # Fazendo as configurações necessárias:
 spark.conf.set("spark.sql.execution.arrow.enabled", "true")
 # Transformando em DF spark:
