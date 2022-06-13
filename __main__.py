@@ -26,7 +26,7 @@ gcs_bucket = "soulcode-mineracao"
 zone = "us-east1-c"
 
 cluster = Dataproc(cluster_name, region, project_id, zone)
-#cluster.cria_cluster()
+cluster.cria_cluster()
 
 # Enviando os jobs:
 job1 = Job(region, project_id, gcs_bucket, 'job1.py', cluster_name)
@@ -34,13 +34,11 @@ job2 = Job(region, project_id, gcs_bucket, 'job2.py', cluster_name)
 job3 = Job(region, project_id, gcs_bucket, 'job3.py', cluster_name)
 
 try:
-    # job1.cria_job()
-    # job2.cria_job()
+    job1.cria_job()
+    job2.cria_job()
     job3.cria_job()
 except Exception as e:
     print(str(e))
 
 # Deletando o cluster para evitar cobranças
-# 
-# 
-# cluster.deleta_cluster()
+cluster.deleta_cluster()
