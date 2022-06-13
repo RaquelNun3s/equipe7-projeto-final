@@ -37,7 +37,7 @@ diamantes = (
     |'Leitura do dataset'>> beam.io.ReadFromText('gs://soulcode-mineracao/tratados/arrecadacao.csv', skip_header_lines=1)
     |'Separar por virgula'>> beam.Map(lambda record: record.split(','))
     |'Filtrar ano' >> beam.Filter(lambda record: int(record[0])>2011)
-    |'Agregar as colunas' >> beam.Map(lambda record: (int(record[0]), record[5], record[6], record[8], record[9]))
+    |'Agregar as colunas' >> beam.Map(lambda record: (int(record[0]), record[5], record[6], float(record[8]), record[9]))
     |'Filtrar por material' >> beam.Filter(lambda record: record[1] == 'DIAMANTE')
     #|'Exibir o resultado' >> beam.Map(print)
     |'Load para arquivo' >> beam.io.WriteToText('gs://soulcode-mineracao/pipelines_outputs/diamantes_ultimos_dez_anos', file_name_suffix='.csv', num_shards=1)
