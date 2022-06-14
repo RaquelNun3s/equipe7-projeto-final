@@ -54,6 +54,7 @@ class Arquivo:
 
         # Deletando a pasta com os arquivos anteriores:
         bucket.delete_blob(blob_antigo_nome)
+        
 # Conectando com a SparkSession
 spark = ( SparkSession.builder
                         .master("local")
@@ -65,7 +66,7 @@ spark = ( SparkSession.builder
 
 spark.conf.set("mapreduce.fileoutputcommitter.marksuccessfuljobs", "false")
 
-# Puxando os arquivos dos seus locais de origem e criando as:
+# Puxando os arquivos dos seus locais de origem e criando as DFs:
 dfs_arrecadacao = spark.read.csv(path='gs://mineracao2/arrecadacao.csv', inferSchema=True, header=True, sep=';', encoding='latin1')
 dfs_barragens = spark.read.csv(path='gs://mineracao2/Barragens.csv', inferSchema=True, header=True, sep=';', encoding='latin1') 
 dfs_autuacao = spark.read.csv(path='gs://mineracao2/autuacao.csv', inferSchema=True, header=True, sep=';', encoding='latin1')
@@ -76,12 +77,6 @@ dfs_pib = spark.read.csv(path='gs://mineracao2/pib.csv', inferSchema=True, heade
 
 
 url = 'https://raw.githubusercontent.com/JoaoHenrique132/dados_populacao_IBGE/main/dados_populacao_IBGE_json/'
-# spark.sparkContext.addFile(url + 'IBGE_AC.json')
-# dfs_dados_populacao = spark.read.json(SparkFiles.get('IBGE_AC.json'))
-
-# dfs_dados_populacao = spark.read.json("hdfs:///mydata/IBGE_AC.json", encoding='latin1', )
-# dfs_dados_populacao = dfs_dados_populacao.withColumn('uf', F.lit('AC'))
-
 df_dados_populacao = pd.read_json(url + 'IBGE_AC.json', lines=True)
 dfs_dados_populacao = spark.createDataFrame(df_dados_populacao)
 dfs_dados_populacao = dfs_dados_populacao.withColumn('uf', F.lit('AC'))

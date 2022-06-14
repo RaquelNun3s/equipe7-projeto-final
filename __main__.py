@@ -5,7 +5,7 @@ from google.cloud import storage
 ServiceAccount = r'C:\Users\quel-\OneDrive\Área de Trabalho\CURSOS\Curso - Python\Projeto_final\projeto-mineracao-soulcode-85d1cc17951f.json'
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = ServiceAccount
 
-# Enviando os arquivos dos jobs para o bucket:
+# Enviando os arquivos dos jobs e do script de inicialização para o bucket:
 client = storage.Client()
 bucket = client.get_bucket('soulcode-mineracao')
 blob1 = bucket.blob('job1.py')
@@ -18,10 +18,10 @@ blob2.upload_from_filename(r'C:\Users\quel-\OneDrive\Área de Trabalho\novaBranc
 blob3.upload_from_filename(r'C:\Users\quel-\OneDrive\Área de Trabalho\novaBranch\Jobs\job3.py')
 blob4.upload_from_filename(r'C:\Users\quel-\OneDrive\Área de Trabalho\novaBranch\script_inicializacao.sh')
 
-#Criando o cluster:
+# Criando o cluster:
 cluster_name = "cluster-teste"
 project_id = "projeto-mineracao-soulcode"
-region = "us-east1" # Importante que seja a mesma região padrão do seu projeto
+region = "us-east1"
 gcs_bucket = "soulcode-mineracao"
 zone = "us-east1-c"
 

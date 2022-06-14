@@ -168,6 +168,7 @@ dfp_arrecadacao.replace(to_replace='-', value=np.nan, inplace=True)
 dfp_arrecadacao.replace(to_replace='None', value=np.nan, inplace=True)
 dfp_arrecadacao.drop(['CPF_CNPJ', 'index'], axis=1, inplace=True)
 dfp_arrecadacao['QuantidadeComercializada'] = dfp_arrecadacao['QuantidadeComercializada'].str.replace(',', '.')
+dfp_arrecadacao['QuantidadeComercializada'] = dfp_arrecadacao['QuantidadeComercializada'].str.replace('"', '')
 dfp_arrecadacao['QuantidadeComercializada'].replace('""', 0)
 dfp_arrecadacao['ValorRecolhido'] = dfp_arrecadacao['ValorRecolhido'].str.replace(',', '.')
 dfp_arrecadacao['QuantidadeComercializada'] = dfp_arrecadacao['QuantidadeComercializada'].astype(float)
@@ -182,6 +183,8 @@ dfp_arrecadacao['UnidadeDeMedida'].replace(to_replace='kg', value='Quilograma', 
 dfp_arrecadacao.replace(to_replace='OURO', value='MINÉRIO DE OURO', inplace=True)
 dfp_arrecadacao.replace(to_replace='FERRO', value='MINÉRIO DE FERRO', inplace=True)
 dfp_arrecadacao.replace(to_replace='COBRE', value='MINÉRIO DE COBRE', inplace=True)
+dfp_arrecadacao.fillna(np.nan, inplace=True)
+dfp_arrecadacao['QuantidadeComercializada'] = dfp_arrecadacao['QuantidadeComercializada'].fillna(0)
 
 # Transformando DataFrame PIB Spark em DataFrame Pandas
 dfp_pib = dfs_pib.toPandas()
@@ -288,6 +291,11 @@ dft_barragens = spark.createDataFrame(dfp_barragens)
 dft_dados_populacao = spark.createDataFrame(dfp_dados_populacao)
 dft_pib = spark.createDataFrame(dfp_pib)
 dft_municipio = spark.createDataFrame(dfp_municipio)
+
+# Alterando o tipo da coluna QuantidadeComercializada
+dft_arrecadacao = dft_arrecadacao.withColumn("QuantidadeComercializada", 
+                                             dft_arrecadacao["QuantidadeComercializada"]
+                                            .cast('float'))
 
 # Fazendo a conexão com o mongo:
 db_conexao_tratada = Conector_mongo('soulcode-mineracao', 'mongodb', 'tratados')
