@@ -2,7 +2,7 @@ from dataproc import *
 import os
 from google.cloud import storage
 
-ServiceAccount = r'C:\Users\quel-\OneDrive\Área de Trabalho\CURSOS\Curso - Python\Projeto_final\projeto-mineracao-soulcode-85d1cc17951f.json'
+ServiceAccount = r'' # Path do arquivo chave da Service Account
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = ServiceAccount
 
 # Enviando os arquivos dos jobs e do script de inicialização para o bucket:
